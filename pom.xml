@@ -14,6 +14,23 @@
         </extensions>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>packagecloud-travis</id>
+            <url>
+                packagecloud+https://packagecloud.io/tstrass/cscc-recommender
+            </url>
+        </repository>
+        <snapshotRepository>
+            <id>packagecloud-travis</id>
+            <url>
+                packagecloud+https://packagecloud.io/tstrass/cscc-recommender
+            </url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
+
     <groupId>ch.uzh.ifi.seal.ase</groupId>
     <artifactId>cscc</artifactId>
     <version>0.1</version>
