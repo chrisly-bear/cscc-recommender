@@ -45,7 +45,7 @@ class IndexDocumentTest {
         doc2 = new IndexDocument("testMethod2", "com.something.util.test.TestClass2", lineContext2, overallContext2);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void getLineContextSimhash() {
         long simhash = doc1.getLineContextSimhash();
         String simhashString = Util.simHashToString(simhash);
@@ -54,7 +54,7 @@ class IndexDocumentTest {
         assertEquals(expectedString, simhashString);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void getOverallContextSimhash() {
         long simhash = doc1.getOverallContextSimhash();
         String simhashString = Util.simHashToString(simhash);
