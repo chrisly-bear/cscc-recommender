@@ -1,19 +1,20 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
-import org.uncommons.maths.binary.BitString;
-
 import java.util.List;
 import java.util.UUID;
+import com.github.tomtung.jsimhash.*;
 
 public class IndexDocument {
 
+    private SimHashBuilder simHashBuilder;
+    // would it make sense to use one of the simhashes as id?
     private static String id;
     private String methodCall;
     private String type;
     private List<String> lineContext;
     private List<String> overallContext;
-    private BitString lineContextSimhash;
-    private BitString overallContextSimhash;
+    private long lineContextSimhash;
+    private long overallContextSimhash;
 
     public IndexDocument(String methodCall, String type, List<String> lineContext, List<String> overallContext) {
         this.id = UUID.randomUUID().toString();
@@ -21,6 +22,7 @@ public class IndexDocument {
         this.type = type;
         this.lineContext = lineContext;
         this.overallContext = overallContext;
+        this.simHashBuilder = new SimHashBuilder();
         this.lineContextSimhash = createSimhashFromStrings(lineContext);
         this.overallContextSimhash = createSimhashFromStrings(overallContext);
     }
@@ -48,20 +50,24 @@ public class IndexDocument {
         return overallContext;
     }
 
-    public BitString getLineContextSimhash() {
+    public long getLineContextSimhash() {
         return lineContextSimhash;
     }
 
-    public BitString getOverallContextSimhash() {
+    public long getOverallContextSimhash() {
         return overallContextSimhash;
     }
 
-    private BitString createSimhashFromStrings(List<String> strings) {
+    private long createSimhashFromStrings(List<String> strings) {
+        // Paper mentions Jenkin hash function to create 64 bit simhash:
+        //    [26] M. S. Uddin, C. K. Roy, K. A. Schneider, and A. Hindle, “On the Effectiveness of Simhash for Detecting Near-Miss Clones in Large Scale Software Systems”, in Proc. WCRE, 2011, pp. 13-22.
+        //    C implementation: https://github.com/vilda/shash
+        // We are using https://github.com/tomtung/jsimhash here
         String concatenatedString = concatenate(strings);
-        // TODO: use Jenkin hash function to create 64 bit simhash
-        // [26] M. S. Uddin, C. K. Roy, K. A. Schneider, and A. Hindle, “On the Effectiveness of Simhash for Detecting Near-Miss Clones in Large Scale Software Systems”, in Proc. WCRE, 2011, pp. 13-22.
-        // C implementation: https://github.com/vilda/shash
-        return null;
+        simHashBuilder.reset();
+//        concatenatedString = concatenatedString.replaceAll("[^\\w,]+", " ").toLowerCase();
+        simHashBuilder.addStringFeature(concatenatedString);
+        return simHashBuilder.computeResult();
     }
 
     private String concatenate(List<String> strings) {
