@@ -25,6 +25,37 @@ public class IndexDocument {
         this.overallContextSimhash = createSimhashFromStrings(overallContext);
     }
 
+    /*
+      Getters
+     */
+    public static String getId() {
+        return id;
+    }
+
+    public String getMethodCall() {
+        return methodCall;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public List<String> getLineContext() {
+        return lineContext;
+    }
+
+    public List<String> getOverallContext() {
+        return overallContext;
+    }
+
+    public BitString getLineContextSimhash() {
+        return lineContextSimhash;
+    }
+
+    public BitString getOverallContextSimhash() {
+        return overallContextSimhash;
+    }
+
     private BitString createSimhashFromStrings(List<String> strings) {
         String concatenatedString = concatenate(strings);
         // TODO: use Jenkin hash function to create 64 bit simhash
@@ -40,4 +71,5 @@ public class IndexDocument {
         }
         return concatenatedString;
     }
+
 }
