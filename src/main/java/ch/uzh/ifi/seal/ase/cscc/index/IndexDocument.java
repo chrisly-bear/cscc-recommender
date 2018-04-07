@@ -86,4 +86,16 @@ public class IndexDocument {
         return Util.hammingDistance(this.getOverallContextSimhash(), other.getOverallContextSimhash());
     }
 
+    public double longestCommonSubsequenceOverallContextToOther(IndexDocument other) {
+        // TODO: calculate normalized longest common subsequence between overall context of 'this' and 'other'
+        // ...
+        return -1;
+    }
+
+    public double levenshteinDistanceLineContextToOther(IndexDocument other) {
+        // TODO: caculate levenshtein distance between line context of 'this' and 'other'
+        // ...
+        return -1;
+    }
+
 }
