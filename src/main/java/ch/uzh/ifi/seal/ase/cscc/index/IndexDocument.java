@@ -78,4 +78,12 @@ public class IndexDocument {
         return concatenatedString;
     }
 
+    public int lineContextHammingDistanceToOther(IndexDocument other) {
+        return Util.hammingDistance(this.getLineContextSimhash(), other.getLineContextSimhash());
+    }
+
+    public int overallContextHammingDistanceToOther(IndexDocument other) {
+        return Util.hammingDistance(this.getOverallContextSimhash(), other.getOverallContextSimhash());
+    }
+
 }

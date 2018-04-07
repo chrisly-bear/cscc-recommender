@@ -45,6 +45,9 @@ public class InvertedIndex {
     private List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
         // TODO 3.3.2:
         // ...
+        // use IndexDocument.lineContextHammingDistanceToOther(IndexDocument)
+        // and IndexDocument.overallContextHammingDistanceToOther(IndexDocument)
+        // to get hamming distance between baseCandidate and receiverObj
         return null;
     }
 
