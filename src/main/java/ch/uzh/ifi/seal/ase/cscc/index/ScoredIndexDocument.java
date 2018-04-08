@@ -83,11 +83,11 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
     }
 
     public double levenshteinDistanceLineContextToOther(ScoredIndexDocument other) {
-        return docWithoutScore.levenshteinDistanceLineContextToOther(other.getIndexDocumentWithoutScore());
+        return docWithoutScore.normalizedLevenshteinDistanceLineContextToOther(other.getIndexDocumentWithoutScore());
     }
 
     public double longestCommonSubsequenceOverallContextToOther(ScoredIndexDocument other) {
-        return docWithoutScore.longestCommonSubsequenceLengthOverallContextToOther(other.getIndexDocumentWithoutScore());
+        return docWithoutScore.normalizedLongestCommonSubsequenceLengthOverallContextToOther(other.getIndexDocumentWithoutScore());
     }
 
 }

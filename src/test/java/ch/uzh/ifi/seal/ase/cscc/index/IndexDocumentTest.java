@@ -18,7 +18,7 @@ public class IndexDocumentTest {
     public void setUp() {
         List<String> lineContext1 = new LinkedList<>();
         lineContext1.add("Romeo");
-        lineContext1.add("Julia");
+        lineContext1.add("Juliet");
         List<String> overallContext1 = new LinkedList<>();
         overallContext1.add("Lorem");
         overallContext1.add("ipsum");
@@ -50,7 +50,7 @@ public class IndexDocumentTest {
         long simhash = doc1.getLineContextSimhash();
         String simhashString = Util.simHashToString(simhash);
         System.out.println("LineContextSimhash: " + simhashString);
-        String expectedString = "0011000011001101000000110101010111111110100001010101100000100001";
+        String expectedString = "1111001101000101111011111000101000000010100010010000100111011001";
         assertEquals(expectedString, simhashString);
     }
 
@@ -69,7 +69,7 @@ public class IndexDocumentTest {
         assertEquals(0, doc1.lineContextHammingDistanceToOther(doc1));
         // hamming distance must be symmetric
         assertEquals(doc2.lineContextHammingDistanceToOther(doc1), doc1.lineContextHammingDistanceToOther(doc2));
-        int expected = 37;
+        int expected = 29;
         assertEquals(expected, doc1.lineContextHammingDistanceToOther(doc2));
         assertEquals(expected, doc2.lineContextHammingDistanceToOther(doc1));
     }
@@ -95,30 +95,33 @@ public class IndexDocumentTest {
 
     @Test
     public void longestCommonSubsequenceLengthOverallContextToOther() throws Exception {
-        // LCS to self is length of concatened context
-        int lengthOfContext = concatenate(doc1.getOverallContext()).length();
-        int longestCommonSubsequenceLength = doc1.longestCommonSubsequenceLengthOverallContextToOther(doc1);
-        assertEquals(lengthOfContext, longestCommonSubsequenceLength);
+        double delta = 0.0;
+
+        // normalized LCS to self is 1
+        double longestCommonSubsequenceLength = doc1.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc1);
+        assertEquals(1, longestCommonSubsequenceLength, delta);
 
         // LCS must be symmetric
-        assertEquals(doc1.longestCommonSubsequenceLengthOverallContextToOther(doc2), doc2.longestCommonSubsequenceLengthOverallContextToOther(doc1));
+        assertEquals(doc1.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc2), doc2.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc1), delta);
 
-        int expected = 20;
-        assertEquals(expected, doc1.longestCommonSubsequenceLengthOverallContextToOther(doc2));
-        assertEquals(expected, doc2.longestCommonSubsequenceLengthOverallContextToOther(doc1));
+        double expected = 0.425531914893617;
+        assertEquals(expected, doc1.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc2), delta);
+        assertEquals(expected, doc2.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc1), delta);
     }
 
     @Test
     public void levenshteinDistanceLineContextToOther() throws Exception {
-        // Levenshtein to self is 0
-        int levenshteinDistanceLineContextToOther = doc1.levenshteinDistanceLineContextToOther(doc1);
-        assertEquals(0, levenshteinDistanceLineContextToOther);
+        double delta = 0.0;
+
+        // normalized Levenshtein to self is 1
+        double levenshteinDistanceLineContextToOther = doc1.normalizedLevenshteinDistanceLineContextToOther(doc1);
+        assertEquals(1, levenshteinDistanceLineContextToOther, delta);
 
         // Levenshtein must be symmetric
-        assertEquals(doc1.levenshteinDistanceLineContextToOther(doc2), doc2.levenshteinDistanceLineContextToOther(doc1));
+        assertEquals(doc1.normalizedLevenshteinDistanceLineContextToOther(doc2), doc2.normalizedLevenshteinDistanceLineContextToOther(doc1), delta);
 
-        int expected = 10;
-        assertEquals(expected, doc1.levenshteinDistanceLineContextToOther(doc2));
-        assertEquals(expected, doc2.levenshteinDistanceLineContextToOther(doc1));
+        double expected = 0.09090909090909094;
+        assertEquals(expected, doc1.normalizedLevenshteinDistanceLineContextToOther(doc2), delta);
+        assertEquals(expected, doc2.normalizedLevenshteinDistanceLineContextToOther(doc1), delta);
     }
 }

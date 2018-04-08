@@ -90,16 +90,36 @@ public class IndexDocument {
         return Util.hammingDistance(this.getOverallContextSimhash(), other.getOverallContextSimhash());
     }
 
-    public int longestCommonSubsequenceLengthOverallContextToOther(IndexDocument other) {
+    /**
+     * Compares the overall context of `this` to `other`
+     * @param other document to compare this one to
+     * @return value between [0,1] where
+     *         0 means documents' overall contexts are completely different,
+     *         1 means documents' overall contexts are identical
+     */
+    public double normalizedLongestCommonSubsequenceLengthOverallContextToOther(IndexDocument other) {
         String left = concatenate(getOverallContext());
         String right = concatenate(other.getOverallContext());
-        return new LongestCommonSubsequence().apply(left, right);
+        int maxLength = Math.max(left.length(), right.length());
+        double lcs = new LongestCommonSubsequence().apply(left, right);
+        double lcsNorm = lcs/maxLength;
+        return lcsNorm;
     }
 
-    public int levenshteinDistanceLineContextToOther(IndexDocument other) {
+    /**
+     * Compares the line context of `this` to `other`
+     * @param other document to compare this one to
+     * @return value between [0,1] where
+     *         0 means documents' line contexts are completely different,
+     *         1 means documents' line contexts are identical
+     */
+    public double normalizedLevenshteinDistanceLineContextToOther(IndexDocument other) {
         String left = concatenate(getLineContext());
         String right = concatenate(other.getLineContext());
-        return LevenshteinDistance.getDefaultInstance().apply(left, right);
+        int maxLength = Math.max(left.length(), right.length());
+        double lev = LevenshteinDistance.getDefaultInstance().apply(left, right);
+        double levNorm = 1 - (lev/maxLength);
+        return levNorm;
     }
 
 }
