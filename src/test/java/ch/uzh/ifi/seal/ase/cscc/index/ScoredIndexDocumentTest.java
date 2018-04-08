@@ -1,6 +1,7 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
 import org.junit.Before;
+import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +14,7 @@ public class ScoredIndexDocumentTest {
     public void setUp() {
     }
 
-    @org.junit.Test
+    @Test
     public void sortingTest() {
         List<ScoredIndexDocument> scoredIndexDocs = new LinkedList<>();
         scoredIndexDocs.add(new ScoredIndexDocument(null, -1));

@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.ase.cscc.index;
 
 import com.github.tomtung.jsimhash.Util;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class IndexDocumentTest {
         doc2 = new IndexDocument("testMethod2", "com.something.util.test.TestClass2", lineContext2, overallContext2);
     }
 
-    @org.junit.Test
+    @Test
     public void getLineContextSimhash() {
         long simhash = doc1.getLineContextSimhash();
         String simhashString = Util.simHashToString(simhash);
@@ -53,7 +54,7 @@ public class IndexDocumentTest {
         assertEquals(expectedString, simhashString);
     }
 
-    @org.junit.Test
+    @Test
     public void getOverallContextSimhash() {
         long simhash = doc1.getOverallContextSimhash();
         String simhashString = Util.simHashToString(simhash);
@@ -62,7 +63,7 @@ public class IndexDocumentTest {
         assertEquals(expectedString, simhashString);
     }
 
-    @org.junit.Test
+    @Test
     public void lineContextHammingDistanceToOther() {
         // hamming distance to self is 0
         assertEquals(0, doc1.lineContextHammingDistanceToOther(doc1));
@@ -73,7 +74,7 @@ public class IndexDocumentTest {
         assertEquals(expected, doc2.lineContextHammingDistanceToOther(doc1));
     }
 
-    @org.junit.Test
+    @Test
     public void overallContextHammingDistanceToOther() {
         // hamming distance to self is 0
         assertEquals(0, doc1.overallContextHammingDistanceToOther(doc1));
