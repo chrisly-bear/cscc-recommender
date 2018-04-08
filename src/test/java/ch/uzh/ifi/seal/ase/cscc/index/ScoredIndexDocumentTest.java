@@ -1,21 +1,20 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-class ScoredIndexDocumentTest {
+public class ScoredIndexDocumentTest {
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
     }
 
-    @Test
-    void sortingTest() {
+    @org.junit.Test
+    public void sortingTest() {
         List<ScoredIndexDocument> scoredIndexDocs = new LinkedList<>();
         scoredIndexDocs.add(new ScoredIndexDocument(null, -1));
         scoredIndexDocs.add(new ScoredIndexDocument(null, -3));

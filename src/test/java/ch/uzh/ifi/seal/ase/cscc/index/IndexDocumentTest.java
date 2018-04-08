@@ -1,21 +1,20 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
 import com.github.tomtung.jsimhash.Util;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-class IndexDocumentTest {
+public class IndexDocumentTest {
 
     IndexDocument doc1;
     IndexDocument doc2;
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
         List<String> lineContext1 = new LinkedList<>();
         lineContext1.add("Romeo");
         lineContext1.add("Julia");
@@ -45,8 +44,8 @@ class IndexDocumentTest {
         doc2 = new IndexDocument("testMethod2", "com.something.util.test.TestClass2", lineContext2, overallContext2);
     }
 
-    @Test
-    void getLineContextSimhash() {
+    @org.junit.Test
+    public void getLineContextSimhash() {
         long simhash = doc1.getLineContextSimhash();
         String simhashString = Util.simHashToString(simhash);
         System.out.println("LineContextSimhash: " + simhashString);
@@ -54,8 +53,8 @@ class IndexDocumentTest {
         assertEquals(expectedString, simhashString);
     }
 
-    @Test
-    void getOverallContextSimhash() {
+    @org.junit.Test
+    public void getOverallContextSimhash() {
         long simhash = doc1.getOverallContextSimhash();
         String simhashString = Util.simHashToString(simhash);
         System.out.println("OverallContextSimhash: " + simhashString);
@@ -63,8 +62,8 @@ class IndexDocumentTest {
         assertEquals(expectedString, simhashString);
     }
 
-    @Test
-    void lineContextHammingDistanceToOther() {
+    @org.junit.Test
+    public void lineContextHammingDistanceToOther() {
         // hamming distance to self is 0
         assertEquals(0, doc1.lineContextHammingDistanceToOther(doc1));
         // hamming distance must be symmetric
@@ -74,8 +73,8 @@ class IndexDocumentTest {
         assertEquals(expected, doc2.lineContextHammingDistanceToOther(doc1));
     }
 
-    @Test
-    void overallContextHammingDistanceToOther() {
+    @org.junit.Test
+    public void overallContextHammingDistanceToOther() {
         // hamming distance to self is 0
         assertEquals(0, doc1.overallContextHammingDistanceToOther(doc1));
         // hamming distance must be symmetric

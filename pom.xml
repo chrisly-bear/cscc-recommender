@@ -70,10 +70,10 @@
             <artifactId>jsimhash_2.11</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
-        <!-- JUnit -->
+        <!-- JUnit4 -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <version>RELEASE</version>
             <scope>test</scope>
         </dependency>
