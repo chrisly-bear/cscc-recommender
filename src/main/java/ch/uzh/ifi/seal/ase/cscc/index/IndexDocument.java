@@ -90,13 +90,13 @@ public class IndexDocument {
         return Util.hammingDistance(this.getOverallContextSimhash(), other.getOverallContextSimhash());
     }
 
-    public double longestCommonSubsequenceOverallContextToOther(IndexDocument other) {
+    public int longestCommonSubsequenceLengthOverallContextToOther(IndexDocument other) {
         String left = concatenate(getOverallContext());
         String right = concatenate(other.getOverallContext());
         return new LongestCommonSubsequence().apply(left, right);
     }
 
-    public double levenshteinDistanceLineContextToOther(IndexDocument other) {
+    public int levenshteinDistanceLineContextToOther(IndexDocument other) {
         String left = concatenate(getLineContext());
         String right = concatenate(other.getLineContext());
         return LevenshteinDistance.getDefaultInstance().apply(left, right);

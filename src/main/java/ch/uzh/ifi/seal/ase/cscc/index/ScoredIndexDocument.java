@@ -87,7 +87,7 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
     }
 
     public double longestCommonSubsequenceOverallContextToOther(ScoredIndexDocument other) {
-        return docWithoutScore.longestCommonSubsequenceOverallContextToOther(other.getIndexDocumentWithoutScore());
+        return docWithoutScore.longestCommonSubsequenceLengthOverallContextToOther(other.getIndexDocumentWithoutScore());
     }
 
 }

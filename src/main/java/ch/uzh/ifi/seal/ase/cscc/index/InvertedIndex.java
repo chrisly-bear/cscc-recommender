@@ -69,7 +69,7 @@ public class InvertedIndex {
     private List<IndexDocument> sortRefindedCandidates(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
         // TODO 3.3.3:
         // ...
-        // use IndexDocument.longestCommonSubsequenceOverallContextToOther(IndexDocument)
+        // use IndexDocument.longestCommonSubsequenceLengthOverallContextToOther(IndexDocument)
         // and IndexDocument.levenshteinDistanceLineContextToOther(IndexDocument)
         return null;
     }

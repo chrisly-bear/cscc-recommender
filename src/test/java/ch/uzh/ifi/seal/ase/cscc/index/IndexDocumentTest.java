@@ -84,4 +84,41 @@ public class IndexDocumentTest {
         assertEquals(expected, doc1.overallContextHammingDistanceToOther(doc2));
         assertEquals(expected, doc2.overallContextHammingDistanceToOther(doc1));
     }
+
+    private String concatenate(List<String> strings) {
+        StringBuilder concatenatedString = new StringBuilder();
+        for (String s : strings) {
+            concatenatedString.append(s);
+        }
+        return concatenatedString.toString();
+    }
+
+    @Test
+    public void longestCommonSubsequenceLengthOverallContextToOther() throws Exception {
+        // LCS to self is length of concatened context
+        int lengthOfContext = concatenate(doc1.getOverallContext()).length();
+        int longestCommonSubsequenceLength = doc1.longestCommonSubsequenceLengthOverallContextToOther(doc1);
+        assertEquals(lengthOfContext, longestCommonSubsequenceLength);
+
+        // LCS must be symmetric
+        assertEquals(doc1.longestCommonSubsequenceLengthOverallContextToOther(doc2), doc2.longestCommonSubsequenceLengthOverallContextToOther(doc1));
+
+        int expected = 20;
+        assertEquals(expected, doc1.longestCommonSubsequenceLengthOverallContextToOther(doc2));
+        assertEquals(expected, doc2.longestCommonSubsequenceLengthOverallContextToOther(doc1));
+    }
+
+    @Test
+    public void levenshteinDistanceLineContextToOther() throws Exception {
+        // Levenshtein to self is 0
+        int levenshteinDistanceLineContextToOther = doc1.levenshteinDistanceLineContextToOther(doc1);
+        assertEquals(0, levenshteinDistanceLineContextToOther);
+
+        // Levenshtein must be symmetric
+        assertEquals(doc1.levenshteinDistanceLineContextToOther(doc2), doc2.levenshteinDistanceLineContextToOther(doc1));
+
+        int expected = 10;
+        assertEquals(expected, doc1.levenshteinDistanceLineContextToOther(doc2));
+        assertEquals(expected, doc2.levenshteinDistanceLineContextToOther(doc1));
+    }
 }
