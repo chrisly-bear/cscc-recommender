@@ -71,11 +71,11 @@ public class IndexDocument {
     }
 
     private String concatenate(List<String> strings) {
-        String concatenatedString = "";
+        StringBuilder concatenatedString = new StringBuilder();
         for (String s : strings) {
-            concatenatedString += s;
+            concatenatedString.append(s);
         }
-        return concatenatedString;
+        return concatenatedString.toString();
     }
 
     public int lineContextHammingDistanceToOther(IndexDocument other) {
