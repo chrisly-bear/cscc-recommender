@@ -3,6 +3,10 @@ package ch.uzh.ifi.seal.ase.cscc.index;
 import java.util.List;
 import java.util.UUID;
 import com.github.tomtung.jsimhash.*;
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.commons.text.similarity.LevenshteinResults;
+import org.apache.commons.text.similarity.LongestCommonSubsequence;
+import org.apache.commons.text.similarity.LongestCommonSubsequenceDistance;
 
 public class IndexDocument {
 
@@ -87,15 +91,15 @@ public class IndexDocument {
     }
 
     public double longestCommonSubsequenceOverallContextToOther(IndexDocument other) {
-        // TODO: calculate normalized longest common subsequence between overall context of 'this' and 'other'
-        // ...
-        return -1;
+        String left = concatenate(getOverallContext());
+        String right = concatenate(other.getOverallContext());
+        return new LongestCommonSubsequence().apply(left, right);
     }
 
     public double levenshteinDistanceLineContextToOther(IndexDocument other) {
-        // TODO: caculate levenshtein distance between line context of 'this' and 'other'
-        // ...
-        return -1;
+        String left = concatenate(getLineContext());
+        String right = concatenate(other.getLineContext());
+        return LevenshteinDistance.getDefaultInstance().apply(left, right);
     }
 
 }
