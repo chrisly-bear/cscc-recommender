@@ -8,7 +8,7 @@ public class IndexDocument {
 
     private SimHashBuilder simHashBuilder;
     // would it make sense to use one of the simhashes as id?
-    private static String id;
+    private String id;
     private String methodCall;
     private String type;
     private List<String> lineContext;
@@ -30,7 +30,7 @@ public class IndexDocument {
     /*
       Getters
      */
-    public static String getId() {
+    public String getId() {
         return id;
     }
 
