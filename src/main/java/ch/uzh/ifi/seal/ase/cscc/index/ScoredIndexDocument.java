@@ -7,18 +7,18 @@ import java.util.List;
  */
 public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
 
-    private IndexDocument docWithoutScore;
+    private IndexDocument docWithoutScores;
     private double score1;
     private double score2;
 
     public ScoredIndexDocument(String methodCall, String type, List<String> lineContext, List<String> overallContext, double score1, double score2) {
-        this.docWithoutScore = new IndexDocument(methodCall, type, lineContext, overallContext);
+        this.docWithoutScores = new IndexDocument(methodCall, type, lineContext, overallContext);
         this.score1 = score1;
         this.score2 = score2;
     }
 
     public ScoredIndexDocument(IndexDocument doc, double score1, double score2) {
-        this.docWithoutScore = doc;
+        this.docWithoutScores = doc;
         this.score1 = score1;
         this.score2 = score2;
     }
@@ -35,8 +35,8 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
      * Removes the scores and returns only the underlying IndexDocument
      * @return IndexDocument without the scores
      */
-    public IndexDocument getIndexDocumentWithoutScore() {
-        return this.docWithoutScore;
+    public IndexDocument getIndexDocumentWithoutScores() {
+        return this.docWithoutScores;
     }
 
     /**
@@ -66,43 +66,43 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
      */
 
     public long getOverallContextSimhash() {
-        return docWithoutScore.getOverallContextSimhash();
+        return docWithoutScores.getOverallContextSimhash();
     }
 
     public List<String> getOverallContext() {
-        return docWithoutScore.getOverallContext();
+        return docWithoutScores.getOverallContext();
     }
 
     public long getLineContextSimhash() {
-        return docWithoutScore.getLineContextSimhash();
+        return docWithoutScores.getLineContextSimhash();
     }
 
     public List<String> getLineContext() {
-        return docWithoutScore.getLineContext();
+        return docWithoutScores.getLineContext();
     }
 
     public int lineContextHammingDistanceToOther(ScoredIndexDocument other) {
-        return docWithoutScore.lineContextHammingDistanceToOther(other.getIndexDocumentWithoutScore());
+        return docWithoutScores.lineContextHammingDistanceToOther(other.getIndexDocumentWithoutScores());
     }
 
     public int overallContextHammingDistanceToOther(ScoredIndexDocument other) {
-        return docWithoutScore.overallContextHammingDistanceToOther(other.getIndexDocumentWithoutScore());
+        return docWithoutScores.overallContextHammingDistanceToOther(other.getIndexDocumentWithoutScores());
     }
 
     public String getMethodCall() {
-        return docWithoutScore.getMethodCall();
+        return docWithoutScores.getMethodCall();
     }
 
     public String getType() {
-        return docWithoutScore.getType();
+        return docWithoutScores.getType();
     }
 
     public double levenshteinDistanceLineContextToOther(ScoredIndexDocument other) {
-        return docWithoutScore.normalizedLevenshteinDistanceLineContextToOther(other.getIndexDocumentWithoutScore());
+        return docWithoutScores.normalizedLevenshteinDistanceLineContextToOther(other.getIndexDocumentWithoutScores());
     }
 
     public double longestCommonSubsequenceOverallContextToOther(ScoredIndexDocument other) {
-        return docWithoutScore.normalizedLongestCommonSubsequenceLengthOverallContextToOther(other.getIndexDocumentWithoutScore());
+        return docWithoutScores.normalizedLongestCommonSubsequenceLengthOverallContextToOther(other.getIndexDocumentWithoutScores());
     }
 
 }

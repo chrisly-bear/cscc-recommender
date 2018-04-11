@@ -61,7 +61,7 @@ public class InvertedIndex {
         List<ScoredIndexDocument> refinedScoredCandidates = scoredBaseCandidates.subList(0, Math.min(k,scoredBaseCandidates.size()));
         List<IndexDocument> refinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : refinedScoredCandidates) {
-            refinedCandidates.add(sid.getIndexDocumentWithoutScore());
+            refinedCandidates.add(sid.getIndexDocumentWithoutScores());
         }
         return refinedCandidates;
     }
