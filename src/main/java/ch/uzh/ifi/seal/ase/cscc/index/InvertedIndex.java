@@ -53,7 +53,7 @@ public class InvertedIndex {
             int overallContextDistance = baseCandidate.overallContextHammingDistanceToOther(receiverObj);
             int viableDistance = overallContextDistance > threshold ? lineContextDistance : overallContextDistance;
             // we take the negative distance so that after sorting, candidates with lower distance (i.e. higher score) will come first
-            ScoredIndexDocument scoredDoc = new ScoredIndexDocument(baseCandidate, -viableDistance);
+            ScoredIndexDocument scoredDoc = new ScoredIndexDocument(baseCandidate, -viableDistance, 0);
             scoredBaseCandidates.add(scoredDoc);
         }
         scoredBaseCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
