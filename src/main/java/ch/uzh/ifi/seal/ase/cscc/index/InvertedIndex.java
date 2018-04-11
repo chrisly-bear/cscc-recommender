@@ -44,14 +44,14 @@ public class InvertedIndex {
 
     private List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
         // TODO: test if this method does everything correctly
-        int threshold = 30; // TODO: this threshold was picked at random and was never tested (maybe a good value is mentioned in the paper?)
+        int switchToLineContextThreshold = 30; // TODO: this threshold was picked at random and was never tested (maybe a good value is mentioned in the paper?)
         int k = 200;
 
         List<ScoredIndexDocument> scoredBaseCandidates = new LinkedList<>();
         for (IndexDocument baseCandidate : baseCandidates) {
             int lineContextDistance = baseCandidate.lineContextHammingDistanceToOther(receiverObj);
             int overallContextDistance = baseCandidate.overallContextHammingDistanceToOther(receiverObj);
-            int viableDistance = overallContextDistance > threshold ? lineContextDistance : overallContextDistance;
+            int viableDistance = overallContextDistance > switchToLineContextThreshold ? lineContextDistance : overallContextDistance;
             // we take the negative distance so that after sorting, candidates with lower distance (i.e. higher score) will come first
             ScoredIndexDocument scoredDoc = new ScoredIndexDocument(baseCandidate, -viableDistance, 0);
             scoredBaseCandidates.add(scoredDoc);
@@ -67,11 +67,23 @@ public class InvertedIndex {
     }
 
     private List<IndexDocument> sortRefindedCandidates(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
-        // TODO 3.3.3:
-        // ...
-        // use IndexDocument.normalizedLongestCommonSubsequenceLengthOverallContextToOther(IndexDocument)
-        // and IndexDocument.normalizedLevenshteinDistanceLineContextToOther(IndexDocument)
-        return null;
+        // TODO: test if this method does everything correctly
+        double filteringThreshold = 0.30;
+        List<ScoredIndexDocument> sortedRefinedScoredCandidates = new LinkedList<>();
+        for (IndexDocument refinedCandidate : refinedCandidates) {
+            double normLCS = refinedCandidate.normalizedLongestCommonSubsequenceLengthOverallContextToOther(receiverObj);
+            if (normLCS > filteringThreshold) {
+                double normLev = refinedCandidate.normalizedLevenshteinDistanceLineContextToOther(receiverObj);
+                ScoredIndexDocument scoredDoc = new ScoredIndexDocument(refinedCandidate, normLCS, normLev);
+                sortedRefinedScoredCandidates.add(scoredDoc);
+            }
+        }
+        sortedRefinedScoredCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
+        List<IndexDocument> sortedRefinedCandidates = new LinkedList<>();
+        for (ScoredIndexDocument sid : sortedRefinedScoredCandidates) {
+            sortedRefinedCandidates.add(sid.getIndexDocumentWithoutScores());
+        }
+        return sortedRefinedCandidates;
     }
 
     private List<IndexDocument> getTopThreeCandidates(List<IndexDocument> sortedRefinedCandidates) {
