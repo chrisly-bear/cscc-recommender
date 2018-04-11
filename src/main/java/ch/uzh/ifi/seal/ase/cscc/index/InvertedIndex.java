@@ -30,9 +30,8 @@ public class InvertedIndex {
     public List<String> getRecommendation(IndexDocument receiverObj) {
         List<IndexDocument> baseCandidates = getBaseCandidates(receiverObj);
         List<IndexDocument> refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
-        List<IndexDocument> sortedRefinedCandidates = sortRefindedCandidates(refinedCandidates, receiverObj);
-        List<IndexDocument> recommendations = getTopThreeCandidates(sortedRefinedCandidates);
-        List<String> recommendationsMethodNames = getMethodNames(recommendations);
+        List<IndexDocument> topThreeCandidates = sortRefindedCandidatesAndGetTopThree(refinedCandidates, receiverObj);
+        List<String> recommendationsMethodNames = getMethodNames(topThreeCandidates);
         return recommendationsMethodNames;
     }
 
@@ -66,9 +65,10 @@ public class InvertedIndex {
         return refinedCandidates;
     }
 
-    private List<IndexDocument> sortRefindedCandidates(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
+    private List<IndexDocument> sortRefindedCandidatesAndGetTopThree(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
         // TODO: test if this method does everything correctly
         double filteringThreshold = 0.30;
+        int candidatesToSuggest = 3;
         List<ScoredIndexDocument> sortedRefinedScoredCandidates = new LinkedList<>();
         for (IndexDocument refinedCandidate : refinedCandidates) {
             double normLCS = refinedCandidate.normalizedLongestCommonSubsequenceLengthOverallContextToOther(receiverObj);
@@ -79,6 +79,10 @@ public class InvertedIndex {
             }
         }
         sortedRefinedScoredCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
+        // remove duplicates
+        removeDuplicates(sortedRefinedScoredCandidates);
+        // get the top three
+        sortedRefinedScoredCandidates = sortedRefinedScoredCandidates.subList(0, Math.min(candidatesToSuggest-1, sortedRefinedScoredCandidates.size()));
         List<IndexDocument> sortedRefinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : sortedRefinedScoredCandidates) {
             sortedRefinedCandidates.add(sid.getIndexDocumentWithoutScores());
@@ -86,10 +90,9 @@ public class InvertedIndex {
         return sortedRefinedCandidates;
     }
 
-    private List<IndexDocument> getTopThreeCandidates(List<IndexDocument> sortedRefinedCandidates) {
-        // TODO 3.3.4:
+    private void removeDuplicates(List<ScoredIndexDocument> sortedRefinedCandidates) {
+        // TODO: remove duplicates from sorted list 'sortedRefinedCandidates'
         // ...
-        return null;
     }
 
     private List<String> getMethodNames(List<IndexDocument> recommendations) {
