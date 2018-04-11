@@ -15,7 +15,7 @@ public class ScoredIndexDocumentTest {
     }
 
     @Test
-    public void sortingTest() {
+    public void sortingTestScore1() {
         List<ScoredIndexDocument> scoredIndexDocs = new LinkedList<>();
         scoredIndexDocs.add(new ScoredIndexDocument(null, -1, 0));
         scoredIndexDocs.add(new ScoredIndexDocument(null, -3, 0));
@@ -27,6 +27,25 @@ public class ScoredIndexDocumentTest {
             sortedString += " ";
         }
         assertEquals("-1.0 -2.0 -3.0 ", sortedString);
+    }
+
+    @Test
+    public void sortingTestScore1AndScore2() {
+        List<ScoredIndexDocument> scoredIndexDocs = new LinkedList<>();
+        scoredIndexDocs.add(new ScoredIndexDocument(null, 2, 0.2));
+        scoredIndexDocs.add(new ScoredIndexDocument(null, 1, 0));
+        scoredIndexDocs.add(new ScoredIndexDocument(null, 2, 0.0));
+        scoredIndexDocs.add(new ScoredIndexDocument(null, 3, 0));
+        scoredIndexDocs.add(new ScoredIndexDocument(null, 2, 0.1));
+        scoredIndexDocs.sort(null);
+        String sortedString = "";
+        for (int i = 0; i < scoredIndexDocs.size(); i++) {
+            sortedString += scoredIndexDocs.get(i).getScore1();
+            sortedString += " ";
+            sortedString += scoredIndexDocs.get(i).getScore2();
+            sortedString += " ";
+        }
+        assertEquals("3.0 0.0 2.0 0.2 2.0 0.1 2.0 0.0 1.0 0.0 ", sortedString);
     }
 
 }
