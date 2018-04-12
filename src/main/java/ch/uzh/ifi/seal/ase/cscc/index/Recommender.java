@@ -11,17 +11,17 @@ public class Recommender {
      * @return names of the methods that are suggested for code completion
      */
     public static List<String> getRecommendation(InvertedIndex index, IndexDocument receiverObj) {
-        List<IndexDocument> baseCandidates = getBaseCandidates(receiverObj);
+        List<IndexDocument> baseCandidates = getBaseCandidates(index, receiverObj);
         List<IndexDocument> refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
         List<IndexDocument> topThreeCandidates = sortRefindedCandidatesAndGetTopThree(refinedCandidates, receiverObj);
         List<String> recommendationsMethodNames = getMethodNames(topThreeCandidates);
         return recommendationsMethodNames;
     }
 
-    private static List<IndexDocument> getBaseCandidates(IndexDocument receiverObj) {
-        // TODO 3.3.1:
-        // ...
-        return null;
+    private static List<IndexDocument> getBaseCandidates(InvertedIndex index, IndexDocument receiverObj) {
+        List<IndexDocument> baseCandidates = new LinkedList<>();
+        baseCandidates.addAll(index.search(receiverObj));
+        return baseCandidates;
     }
 
     private static List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
