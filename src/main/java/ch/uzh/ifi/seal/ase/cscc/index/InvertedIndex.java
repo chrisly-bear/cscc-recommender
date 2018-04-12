@@ -1,8 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class InvertedIndex {
 
@@ -90,9 +88,20 @@ public class InvertedIndex {
         return sortedRefinedCandidates;
     }
 
+    /**
+     * Removes documents with same method call name while leaving the order of the list unchanged.
+     */
     private void removeDuplicates(List<ScoredIndexDocument> sortedRefinedCandidates) {
-        // TODO: remove duplicates from sorted list 'sortedRefinedCandidates'
-        // ...
+        Set<String> uniqueMethodNames = new HashSet<>();
+        for (int i = 0; i < sortedRefinedCandidates.size(); i++) {
+            String methodName = sortedRefinedCandidates.get(i).getMethodCall();
+            if (uniqueMethodNames.contains(methodName)) {
+                sortedRefinedCandidates.remove(i);
+                i--;
+            } else {
+                uniqueMethodNames.add(methodName);
+            }
+        }
     }
 
     private List<String> getMethodNames(List<IndexDocument> recommendations) {
