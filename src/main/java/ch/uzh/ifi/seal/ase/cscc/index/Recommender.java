@@ -4,28 +4,13 @@ import java.util.*;
 
 public class Recommender {
 
-    // INDEX 1: Type Name - Method Names
-    private HashMap<String, List<String>> index_TypeMethod;
-
-    // INDEX 2: Method Name - Index Documents
-    private HashMap<String, List<IndexDocument>> index_MethodDocument;
-
-    public Recommender() {
-        this.index_TypeMethod = new HashMap<>();
-        this.index_MethodDocument = new HashMap<>();
-    }
-
-    public void indexDocument(IndexDocument doc) {
-        // TODO 3.2:
-        // ...
-    }
-
     /**
      * Get 3 code completion suggestions for the receiver object.
+     * @param index inverted index structure (model) with which to suggest code completions
      * @param receiverObj object, on which the code completion is called
      * @return names of the methods that are suggested for code completion
      */
-    public List<String> getRecommendation(IndexDocument receiverObj) {
+    public List<String> getRecommendation(InvertedIndex index, IndexDocument receiverObj) {
         List<IndexDocument> baseCandidates = getBaseCandidates(receiverObj);
         List<IndexDocument> refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
         List<IndexDocument> topThreeCandidates = sortRefindedCandidatesAndGetTopThree(refinedCandidates, receiverObj);
