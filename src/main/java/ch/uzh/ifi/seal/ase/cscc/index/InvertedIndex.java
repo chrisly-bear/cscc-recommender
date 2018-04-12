@@ -69,7 +69,7 @@ public class InvertedIndex {
                 }
                 postingsList.add(doc);
             }
-            System.out.println("indexed " + doc); // TODO: debug code, remove
+//            System.out.println("indexed " + doc);
         }
 
         private Set<IndexDocument> search(IndexDocument doc) {
@@ -79,20 +79,19 @@ public class InvertedIndex {
                 return answers;
             }
             for (String term : doc.getOverallContext()) {
-                Set<IndexDocument> answersForCurrentTerm = new HashSet<>(); // TODO: debug code, remove
+//                Set<IndexDocument> answersForCurrentTerm = new HashSet<>();
                 List<IndexDocument> postingsList = index.get(term);
                 if (postingsList != null) {
                     // term exists in index
                     for (IndexDocument posting : postingsList) {
-                        answersForCurrentTerm.add(posting); // TODO: debug code, remove
+//                        answersForCurrentTerm.add(posting);
                         answers.add(posting);
                     }
                 }
-                // TODO: debug code, remove
-                System.out.println("'" + term + "' found in these documents: ");
-                for (IndexDocument answerDoc : answersForCurrentTerm) {
-                    System.out.println("   " + answerDoc);
-                }
+//                System.out.println("'" + term + "' found in these documents: ");
+//                for (IndexDocument answerDoc : answersForCurrentTerm) {
+//                    System.out.println("   " + answerDoc);
+//                }
             }
             return answers;
         }
