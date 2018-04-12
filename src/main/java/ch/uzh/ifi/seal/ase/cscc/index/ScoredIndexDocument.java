@@ -105,4 +105,18 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
         return docWithoutScores.normalizedLongestCommonSubsequenceLengthOverallContextToOther(other.getIndexDocumentWithoutScores());
     }
 
+    @Override
+    public String toString() {
+        return "ScoredIndexDocument{" +
+                "id='" + docWithoutScores.getId() + '\'' +
+                ", methodCall='" + docWithoutScores.getMethodCall() + '\'' +
+                ", type='" + docWithoutScores.getType() + '\'' +
+                ", lineContext=" + docWithoutScores.getLineContext() +
+                ", overallContext=" + docWithoutScores.getOverallContext() +
+                ", lineContextSimhash=" + docWithoutScores.getLineContextSimhash() +
+                ", overallContextSimhash=" + docWithoutScores.getOverallContextSimhash() +
+                ", score1=" + score1 +
+                ", score2=" + score2 +
+                '}';
+    }
 }

@@ -122,4 +122,16 @@ public class IndexDocument {
         return levNorm;
     }
 
+    @Override
+    public String toString() {
+        return "IndexDocument{" +
+                "id='" + id + '\'' +
+                ", methodCall='" + methodCall + '\'' +
+                ", type='" + type + '\'' +
+                ", lineContext=" + lineContext +
+                ", overallContext=" + overallContext +
+                ", lineContextSimhash=" + lineContextSimhash +
+                ", overallContextSimhash=" + overallContextSimhash +
+                '}';
+    }
 }
