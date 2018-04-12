@@ -10,7 +10,7 @@ public class Recommender {
      * @param receiverObj object, on which the code completion is called
      * @return names of the methods that are suggested for code completion
      */
-    public List<String> getRecommendation(InvertedIndex index, IndexDocument receiverObj) {
+    public static List<String> getRecommendation(InvertedIndex index, IndexDocument receiverObj) {
         List<IndexDocument> baseCandidates = getBaseCandidates(receiverObj);
         List<IndexDocument> refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
         List<IndexDocument> topThreeCandidates = sortRefindedCandidatesAndGetTopThree(refinedCandidates, receiverObj);
@@ -18,13 +18,13 @@ public class Recommender {
         return recommendationsMethodNames;
     }
 
-    private List<IndexDocument> getBaseCandidates(IndexDocument receiverObj) {
+    private static List<IndexDocument> getBaseCandidates(IndexDocument receiverObj) {
         // TODO 3.3.1:
         // ...
         return null;
     }
 
-    private List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
+    private static List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
         // TODO: test if this method does everything correctly
         int switchToLineContextThreshold = 30; // TODO: this threshold was picked at random and was never tested (maybe a good value is mentioned in the paper?)
         int k = 200;
@@ -48,7 +48,7 @@ public class Recommender {
         return refinedCandidates;
     }
 
-    private List<IndexDocument> sortRefindedCandidatesAndGetTopThree(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
+    private static List<IndexDocument> sortRefindedCandidatesAndGetTopThree(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
         // TODO: test if this method does everything correctly
         double filteringThreshold = 0.30;
         int candidatesToSuggest = 3;
@@ -76,7 +76,7 @@ public class Recommender {
     /**
      * Removes documents with same method call name while leaving the order of the list unchanged.
      */
-    private void removeDuplicates(List<ScoredIndexDocument> sortedRefinedCandidates) {
+    private static void removeDuplicates(List<ScoredIndexDocument> sortedRefinedCandidates) {
         Set<String> uniqueMethodNames = new HashSet<>();
         for (int i = 0; i < sortedRefinedCandidates.size(); i++) {
             String methodName = sortedRefinedCandidates.get(i).getMethodCall();
@@ -89,7 +89,7 @@ public class Recommender {
         }
     }
 
-    private List<String> getMethodNames(List<IndexDocument> recommendations) {
+    private static List<String> getMethodNames(List<IndexDocument> recommendations) {
         List<String> methodNames = new LinkedList<>();
         for (IndexDocument doc : recommendations) {
             methodNames.add(doc.getMethodCall());
