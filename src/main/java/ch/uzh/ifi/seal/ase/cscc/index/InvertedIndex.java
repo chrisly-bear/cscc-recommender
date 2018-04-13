@@ -38,6 +38,16 @@ public class InvertedIndex {
         return answers;
     }
 
+    public void persistToDisk(String targetDir) {
+        // TODO 3.2.3: write index to disk
+        // ...
+    }
+
+    public void initializeFromDisk(String sourceDir) {
+        // TODO 3.2.4: initialize index from disk
+        // ...
+    }
+
     // INDEX 2
     // Context Terms - Contexts
     private class InvertedIndexStructure {
