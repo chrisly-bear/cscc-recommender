@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
@@ -8,11 +9,12 @@ import static org.junit.Assert.*;
 
 public class InvertedIndexTest {
 
-    @Test
-    public void search() {
+    private List<IndexDocument> docsToIndex = new LinkedList<>();
+    private String persistenceLocation = "/tmp/";
 
+    @Before
+    public void setUp() {
         // test docs
-        List<IndexDocument> docsToIndex = new LinkedList<>();
         docsToIndex.add(new IndexDocument("methodCall", "java.util.List", new LinkedList<>(), Arrays.asList(
                 "toLowerCase", "this", "is", "an", "overall", "context"
         )));
@@ -28,7 +30,10 @@ public class InvertedIndexTest {
         docsToIndex.add(new IndexDocument("diveDeep", "org.entity.Submarine", new LinkedList<>(), Arrays.asList(
                 "equals", "toString", "pressureIsInSafeRange", "lookForFish", "getWaterTemperature"
         )));
+    }
 
+    @Test
+    public void search() {
         // create inverted index
         InvertedIndex index = new InvertedIndex();
         for (IndexDocument doc : docsToIndex) {
@@ -63,4 +68,14 @@ public class InvertedIndexTest {
         return methodNames;
     }
 
+    @Test
+    public void persist() {
+        // create inverted index
+        InvertedIndex index = new InvertedIndex();
+        for (IndexDocument doc : docsToIndex) {
+            index.indexDocument(doc);
+        }
+        // write to disk
+        index.persistToDisk(persistenceLocation);
+    }
 }
