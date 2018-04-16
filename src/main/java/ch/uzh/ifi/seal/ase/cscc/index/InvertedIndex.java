@@ -1,5 +1,7 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
+import org.apache.commons.io.FileUtils;
+import java.io.*;
 import java.util.*;
 
 public class InvertedIndex {
@@ -38,9 +40,81 @@ public class InvertedIndex {
         return answers;
     }
 
+    /**
+     * Warning: If {@code targetDir} already contains a persisted inverted index, that
+     * inverted index will be overwritten.
+     * @param targetDir directory in which to store the inverted index
+     */
     public void persistToDisk(String targetDir) {
-        // TODO 3.2.3: write index to disk
-        // ...
+
+        // create top level directory
+        String invertedIndexDirPath = targetDir + "/InvertedIndex";
+        File invertedIndexDir = new File(invertedIndexDirPath);
+        deleteDirectoryIfExists(invertedIndexDir);
+        invertedIndexDir.mkdir();
+
+        // create directory for contexts
+        String contextsDirPath = invertedIndexDirPath + "/IndexDocuments";
+        File contextDir = new File(contextsDirPath);
+        contextDir.mkdir();
+
+        // create directory for inverted index structures
+        String invertedIndexStructuresDirPath = invertedIndexDirPath + "/InvertedIndexStructures";
+        File invertedIndexStructuresDir = new File(invertedIndexStructuresDirPath);
+        invertedIndexStructuresDir.mkdir();
+
+        for (InvertedIndexStructure invertedIndexStructure : typeIndex.values()) {
+            // serialize contexts (IndexDocument objects) stored in this inverted index structure to disk
+            storeContexts(contextsDirPath, invertedIndexStructure.getIndexedDocs());
+            // store inverted index structure (InvertedIndexStructure objects) to disk
+            storeInvertedIndexStructure(invertedIndexStructuresDir, invertedIndexStructure);
+        }
+    }
+
+    private void deleteDirectoryIfExists(File dir) {
+        if (dir.exists()) {
+            System.out.print("'InvertedIndex' directory already exists. Deleting it... ");
+            try {
+                FileUtils.deleteDirectory(dir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void storeContexts(String contextsDirPath, Set<IndexDocument> contexts) {
+        for (IndexDocument doc : contexts) {
+            try {
+                FileOutputStream fileOut = new FileOutputStream(contextsDirPath + "/" + doc.getMethodCall() + "_" + doc.getId() + ".ser");
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                out.writeObject(doc);
+                out.close();
+                fileOut.close();
+                System.out.println("Serialized data is saved in " + fileOut);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void storeInvertedIndexStructure(File invertedIndexStructuresDir, InvertedIndexStructure invertedIndexStructure) {
+        String typeDirPath = invertedIndexStructuresDir + "/" + invertedIndexStructure.representedType;
+        File typeDir = new File(typeDirPath);
+        typeDir.mkdir();
+        try {
+            for (String methodName : invertedIndexStructure.index.keySet()) {
+                String postingsListPath = typeDirPath + "/" + methodName;
+                BufferedWriter invertedIndexStructureWriter = new BufferedWriter(new FileWriter(postingsListPath));
+
+                for (IndexDocument posting : invertedIndexStructure.index.get(methodName)) {
+                    invertedIndexStructureWriter.write(posting.getId());
+                    invertedIndexStructureWriter.newLine();
+                }
+                invertedIndexStructureWriter.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void initializeFromDisk(String sourceDir) {
@@ -58,10 +132,12 @@ public class InvertedIndex {
 
         private Map<String, List<IndexDocument>> index;
         private String representedType;
+        private Set<IndexDocument> indexedDocs;
 
         private InvertedIndexStructure(String representedType) {
             this.index = new HashMap<>();
             this.representedType = representedType;
+            this.indexedDocs = new HashSet<>();
         }
 
         private void indexDoc(IndexDocument doc) {
@@ -79,6 +155,7 @@ public class InvertedIndex {
                 }
                 postingsList.add(doc);
             }
+            indexedDocs.add(doc);
 //            System.out.println("indexed " + doc);
         }
 
@@ -105,6 +182,11 @@ public class InvertedIndex {
             }
             return answers;
         }
+
+        private Set<IndexDocument> getIndexedDocs() {
+            return this.indexedDocs;
+        }
+
     }
 
 }
