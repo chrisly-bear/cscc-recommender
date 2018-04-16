@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 import com.github.tomtung.jsimhash.*;
@@ -8,9 +9,9 @@ import org.apache.commons.text.similarity.LevenshteinResults;
 import org.apache.commons.text.similarity.LongestCommonSubsequence;
 import org.apache.commons.text.similarity.LongestCommonSubsequenceDistance;
 
-public class IndexDocument {
+public class IndexDocument implements Serializable {
 
-    private SimHashBuilder simHashBuilder;
+    private transient SimHashBuilder simHashBuilder;
     // would it make sense to use one of the simhashes as id?
     private String id;
     private String methodCall;
