@@ -73,7 +73,7 @@ public class InvertedIndex {
 
     private void deleteDirectoryIfExists(File dir) {
         if (dir.exists()) {
-            System.out.print("'InvertedIndex' directory already exists. Deleting it... ");
+            System.out.println("'InvertedIndex' directory already exists. Deleting it... ");
             try {
                 FileUtils.deleteDirectory(dir);
             } catch (IOException e) {
@@ -85,12 +85,13 @@ public class InvertedIndex {
     private void storeContexts(String contextsDirPath, Set<IndexDocument> contexts) {
         for (IndexDocument doc : contexts) {
             try {
-                FileOutputStream fileOut = new FileOutputStream(contextsDirPath + "/" + doc.getMethodCall() + "_" + doc.getId() + ".ser");
+                String contextPath = contextsDirPath + "/" + doc.getMethodCall() + "_" + doc.getId() + ".ser";
+                FileOutputStream fileOut = new FileOutputStream(contextPath);
                 ObjectOutputStream out = new ObjectOutputStream(fileOut);
                 out.writeObject(doc);
                 out.close();
                 fileOut.close();
-                System.out.println("Serialized data is saved in " + fileOut);
+//                System.out.println("Serialized data is saved in " + contextPath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
