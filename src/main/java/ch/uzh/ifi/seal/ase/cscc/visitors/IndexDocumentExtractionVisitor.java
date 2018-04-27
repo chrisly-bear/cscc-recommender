@@ -18,14 +18,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
     private final int LAST_N_CONSIDERED_STATEMENTS = 6;
 
     @Override
-    public IndexDocument visit(IExpressionStatement stmt, Void aVoid) {
-        return super.visit(stmt, aVoid);
-    }
-
-    @Override
     protected List<IndexDocument> visit(List<IStatement> body, Void aVoid) {
-        LinkedList<IStatement> statements = new LinkedList<>();
-        statements.addAll(body);
         for (IStatement statement : body) {
             if (statement instanceof IExpressionStatement) {
                 IAssignableExpression expression = ((IExpressionStatement) statement).getExpression();
@@ -46,7 +39,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                     System.out.println(rawMethodCall);
 
                     // Now we get the last n statements before our method invocation
-                    List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(statements, statements.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
+                    List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
 
                     // TODO Get method names, that includes names of declared methods as well as names of invocated methods
                     // TODO Get Java keywords
