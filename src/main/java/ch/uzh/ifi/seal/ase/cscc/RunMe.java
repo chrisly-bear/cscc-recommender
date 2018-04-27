@@ -51,6 +51,9 @@ public class RunMe {
                     Context ctx = ra.getNext(Context.class);
                     ISST sst = ctx.getSST();
 
+                    IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
+                    sst.accept(indexDocumentExtractionVisitor, null);
+
 //                    System.out.println("------------- (beginning of context) -------------");
 
                     // print a string representation of the SST to console
@@ -60,8 +63,8 @@ public class RunMe {
 //                    collectTypes(sst);
 
                     // TODO 1: How many method invocations are typically called in a method body?
-                    double avgNumberOfMethodInvocationsInMethodBody = averageNumberOfMethodInvocationsInMethodBody(sst);
-                    System.out.println("Avg of method invocations: " + avgNumberOfMethodInvocationsInMethodBody);
+                    //double avgNumberOfMethodInvocationsInMethodBody = averageNumberOfMethodInvocationsInMethodBody(sst);
+                    //System.out.println("Avg of method invocations: " + avgNumberOfMethodInvocationsInMethodBody);
 
                     // TODO 2: What fraction of classes of the dataset overrides the Equals method?
                     // ...
