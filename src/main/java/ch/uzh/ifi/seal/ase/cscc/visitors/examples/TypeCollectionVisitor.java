@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ch.uzh.ifi.seal.ase.cscc.visitors;
+package ch.uzh.ifi.seal.ase.cscc.visitors.examples;
 
 import java.util.Set;
 
@@ -66,6 +66,8 @@ public class TypeCollectionVisitor extends AbstractTraversingNodeVisitor<Set<ITy
 		// now continue with the traversal, implemented in the base class
 		return super.visit(decl, seenTypes);
 	}
+
+
 
 	// ... there are many other visit methods that you should override to handle
 	// different code elements, but I guess, you get the idea now. :)

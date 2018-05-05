@@ -1,4 +1,4 @@
-package ch.uzh.ifi.seal.ase.cscc.visitors;
+package ch.uzh.ifi.seal.ase.cscc.visitors.examples;
 
 import cc.kave.commons.model.ssts.IStatement;
 import cc.kave.commons.model.ssts.declarations.IMethodDeclaration;

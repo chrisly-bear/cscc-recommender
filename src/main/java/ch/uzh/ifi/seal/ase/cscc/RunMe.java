@@ -6,6 +6,8 @@ import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import cc.kave.commons.utils.ssts.SSTPrintingUtils;
+import ch.uzh.ifi.seal.ase.cscc.visitors.examples.MethodInvocationVisitor;
+import ch.uzh.ifi.seal.ase.cscc.visitors.examples.TypeCollectionVisitor;
 import com.google.common.collect.Sets;
 import ch.uzh.ifi.seal.ase.cscc.visitors.*;
 import ch.uzh.ifi.seal.ase.cscc.utils.*;
@@ -18,12 +20,13 @@ import java.util.Set;
 
 public class RunMe {
 
-	/*
-	 * download the interaction data and unzip it into the root of this project (at
-	 * the level of the pom.xml). Unpack it, you should now have a folder that
-	 * includes a bunch of folders that have dates as names and that contain .zip
-	 * files.
-	 */
+    private static final int LIMIT = 5;
+    /*
+         * download the interaction data and unzip it into the root of this project (at
+         * the level of the pom.xml). Unpack it, you should now have a folder that
+         * includes a bunch of folders that have dates as names and that contain .zip
+         * files.
+         */
 	public static String eventsDir = "Data/Events";
 
 	/*
@@ -47,17 +50,21 @@ public class RunMe {
                     perc);
 
             try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
+                int i = 0;
                 while (ra.hasNext()) {
                     Context ctx = ra.getNext(Context.class);
                     ISST sst = ctx.getSST();
 
+                    printSST(sst);
+
                     IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
                     sst.accept(indexDocumentExtractionVisitor, null);
+
+                    break;
 
 //                    System.out.println("------------- (beginning of context) -------------");
 
                     // print a string representation of the SST to console
-//                    printSST(sst);
 
                     // print all object types seen in the context
 //                    collectTypes(sst);
@@ -73,6 +80,7 @@ public class RunMe {
                     // ...
 
 //                    System.out.println("---------------- (end of context) ----------------");
+
                 }
             }
         }

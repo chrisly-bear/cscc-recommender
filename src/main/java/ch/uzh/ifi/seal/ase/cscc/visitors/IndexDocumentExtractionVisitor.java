@@ -3,6 +3,7 @@ package ch.uzh.ifi.seal.ase.cscc.visitors;
 import cc.kave.commons.model.ssts.IStatement;
 import cc.kave.commons.model.ssts.expressions.IAssignableExpression;
 import cc.kave.commons.model.ssts.expressions.assignable.IInvocationExpression;
+import cc.kave.commons.model.ssts.impl.statements.VariableDeclaration;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.statements.IExpressionStatement;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
@@ -17,41 +18,69 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
 
     private final int LAST_N_CONSIDERED_STATEMENTS = 6;
 
+    private final ContextVisitor contextVisitor = new ContextVisitor();
+
     @Override
     protected List<IndexDocument> visit(List<IStatement> body, Void aVoid) {
+
+        List<IndexDocument> indexDocuments = new ArrayList<>();
+
         for (IStatement statement : body) {
             if (statement instanceof IExpressionStatement) {
                 IAssignableExpression expression = ((IExpressionStatement) statement).getExpression();
                 if (expression instanceof IInvocationExpression) {
-                    // We have dedected a method invocation
+                    // We have detected a method invocation
 
                     // We can retrieve the simple name (not the full name) of the invocated method like this:
-                    String methodName = ((IInvocationExpression) expression).getMethodName().getName();
+                    String methodCall = ((IInvocationExpression) expression).getMethodName().getName();
 
                     // We can also retrieve the name of the type on which the method was invocated like this:
-                    String type = ((IInvocationExpression) expression).getReference().getIdentifier();
-
-                    // We don't care for parameters, so don't get them
-
-                    // Now we can assemble the method call like it was in the source code
-                    String rawMethodCall = type + "." + methodName + "()";
-
-                    System.out.println(rawMethodCall);
+                    String type = findTypeOfVariableOnWhichMethodWasInvocated(body, ((IInvocationExpression) expression).getReference().getIdentifier());
 
                     // Now we get the last n statements before our method invocation
                     List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
 
-                    // TODO Get method names, that includes names of declared methods as well as names of invocated methods
+                    Set<String> overallContext = new HashSet<>();
+                    Set<String> lineContext = new HashSet<>();
+
+                    lastNStatements.forEach(iStatement -> iStatement.accept(contextVisitor, overallContext));
+
+                    statement.accept(contextVisitor, lineContext);
+
+                    if (lineContext.contains(methodCall)) {
+                        System.out.println("Line context would be the same as the name of the method, make line context empty");
+                        lineContext.remove(methodCall);
+                    }
+
+                    List<String> overallContextList = new ArrayList<>();
+                    overallContextList.addAll(overallContext);
+
+                    List<String> lineContextList = new ArrayList<>();
+                    lineContextList.addAll(lineContext);
+
+                    IndexDocument indexDocument = new IndexDocument(methodCall, type, lineContextList, overallContextList);
+
+                    System.out.println(indexDocument.toString());
+
                     // TODO Get Java keywords
-                    // TODO Get Class and Interface names
-                    // TODO Find a way to get the line context
-
-
-                    // TODO Take the list
                 }
             }
         }
         return Collections.emptyList();
+    }
+
+    private String findTypeOfVariableOnWhichMethodWasInvocated(List<IStatement> statements, String identifier) {
+        String result = "";
+        for (IStatement iStatement : statements) {
+            if (iStatement instanceof VariableDeclaration) {
+                String identifierOfThisDeclaration = ((VariableDeclaration) iStatement).getReference().getIdentifier();
+                if (identifier.equals(identifierOfThisDeclaration)) {
+                    String type = ((VariableDeclaration) iStatement).getType().getName();
+                    result = type;
+                }
+            }
+        }
+        return result;
     }
 
     /**
