@@ -9,12 +9,14 @@ import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
+import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 public class RecommenderHelper {
@@ -35,10 +37,8 @@ public class RecommenderHelper {
      * Default behavior is to count it as a success if the chosen method name completion was among the top
      * 3 proposals.
      * Test results are printed to the console.
-     *
-     * @param modelOutputDir an empty directory where to store the learned model for each of the 10 rounds. The directory is cleared afterwards.
      */
-    public void performTenFoldCrossValidation(String modelOutputDir) throws IOException {
+    public void performTenFoldCrossValidation() throws IOException {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipsTotal = getNumZips(zips);
 
@@ -48,7 +48,7 @@ public class RecommenderHelper {
         int bucketSize = zipsTotal / 10;
 
         for (int i = 0; i < 10; i++) {
-            CompletionModel completionModel = new CompletionModel(modelOutputDir);
+            CompletionModel completionModel = new CompletionModel();
             System.out.printf("training model %d\n", i);
 
             modelFromTrainingBuckets(bucketSize, i, completionModel);
@@ -88,8 +88,17 @@ public class RecommenderHelper {
         });
     }
 
-    private boolean isCompletionProposalSuccess() {
-        return true;
+    /**
+     * Return success if method name completion is in top 3 recommendations
+     */
+    private boolean isCompletionProposalSuccess(CompletionModel model, IndexDocument document) {
+        List<String> recommendations = model.recommendFor(document);
+
+        for (String recommendation : recommendations) {
+            if (document.getMethodCall().equals(recommendation)) return true;
+        }
+
+        return false;
     }
 
     private int getNumZips(List<String> zips) {
@@ -150,10 +159,19 @@ public class RecommenderHelper {
                     while (ra.hasNext()) {
                         Context ctx = ra.getNext(Context.class);
 
-                        if (isCompletionProposalSuccess()) {
-                            successes++;
+                        ISST sst = ctx.getSST();
+
+                        IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
+                        List<IndexDocument> indexDocuments = new LinkedList<>();
+
+                        sst.accept(indexDocumentExtractionVisitor, indexDocuments);
+
+                        for (IndexDocument document : indexDocuments) {
+                            if (isCompletionProposalSuccess(completionModel, document)) {
+                                successes++;
+                            }
+                            samples++;
                         }
-                        samples++;
                     }
                 }
             }
