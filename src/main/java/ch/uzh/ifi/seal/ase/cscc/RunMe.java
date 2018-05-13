@@ -13,6 +13,7 @@ import ch.uzh.ifi.seal.ase.cscc.visitors.*;
 import ch.uzh.ifi.seal.ase.cscc.utils.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,8 +36,12 @@ public class RunMe {
 	public static String contextsDir = "Data/Contexts";
 
 	public static void main(String[] args) {
-        new RecommenderHelper(contextsDir, eventsDir).performTenFoldCrossValidation("Data/Model");
-	}
+        try {
+            new RecommenderHelper(contextsDir, eventsDir).performTenFoldCrossValidation("Data/Model");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private static void processAllContexts() {
         List<String> zips = IoHelper.findAllZips(contextsDir);

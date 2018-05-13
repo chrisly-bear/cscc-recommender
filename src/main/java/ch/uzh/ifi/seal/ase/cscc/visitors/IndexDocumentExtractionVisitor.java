@@ -14,16 +14,14 @@ import java.util.*;
 /**
  * Visitor that takes a body of statements into the visit method and returns a list of IndexDocuments
  */
-public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisitor<Void, IndexDocument> {
+public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisitor<List<IndexDocument>, Void> {
 
     private final int LAST_N_CONSIDERED_STATEMENTS = 6;
 
     private final ContextVisitor contextVisitor = new ContextVisitor();
 
     @Override
-    protected List<IndexDocument> visit(List<IStatement> body, Void aVoid) {
-
-        List<IndexDocument> indexDocuments = new ArrayList<>();
+    protected List<Void> visit(List<IStatement> body, List<IndexDocument> indexDocuments) {
 
         for (IStatement statement : body) {
             if (statement instanceof IExpressionStatement) {
@@ -48,7 +46,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                     statement.accept(contextVisitor, lineContext);
 
                     if (lineContext.contains(methodCall)) {
-                        System.out.println("Line context would be the same as the name of the method, make line context empty");
+                        //System.out.println("Line context would be the same as the name of the method, make line context empty");
                         lineContext.remove(methodCall);
                     }
 
@@ -60,13 +58,14 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
 
                     IndexDocument indexDocument = new IndexDocument(methodCall, type, lineContextList, overallContextList);
 
-                    System.out.println(indexDocument.toString());
+                    // TODO Get Java keywords?
 
-                    // TODO Get Java keywords
+                    indexDocuments.add(indexDocument);
                 }
             }
         }
-        return Collections.emptyList();
+
+        return null;
     }
 
     private String findTypeOfVariableOnWhichMethodWasInvocated(List<IStatement> statements, String identifier) {

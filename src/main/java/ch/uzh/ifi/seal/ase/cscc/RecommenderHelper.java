@@ -8,15 +8,18 @@ import cc.kave.commons.model.events.completionevents.TerminationState;
 import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
+import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 public class RecommenderHelper {
     private static final boolean PRINT_PROGRESS = false;
+    private static final int LIMIT_ZIPS = 10;
 
     private String contextsDir;
     private String eventsDir;
@@ -35,13 +38,23 @@ public class RecommenderHelper {
      *
      * @param modelOutputDir an empty directory where to store the learned model for each of the 10 rounds. The directory is cleared afterwards.
      */
-    public void performTenFoldCrossValidation(String modelOutputDir) {
-        foreachContext((Context context) -> {
-            ISST sst = context.getSST();
+    public void performTenFoldCrossValidation(String modelOutputDir) throws IOException {
+        List<String> zips = IoHelper.findAllZips(contextsDir);
+        int zipsTotal = getNumZips(zips);
 
-            IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
-            sst.accept(indexDocumentExtractionVisitor, null);
-        });
+        // let's just divide the zips in 10 buckets, naively assuming they all contain about the
+        // same number of contexts
+
+        int bucketSize = zipsTotal / 10;
+
+        for (int i = 0; i < 10; i++) {
+            CompletionModel completionModel = new CompletionModel(modelOutputDir);
+            System.out.printf("training model %d\n", i);
+
+            modelFromTrainingBuckets(bucketSize, i, completionModel);
+
+            performCrossValidation(bucketSize, i, completionModel);
+        }
     }
 
     /**
@@ -79,37 +92,84 @@ public class RecommenderHelper {
         return true;
     }
 
-    private void foreachContext(OnContextFoundCallback callback) {
+    private int getNumZips(List<String> zips) {
+        if (LIMIT_ZIPS > 0) {
+            return LIMIT_ZIPS;
+        } else {
+            return zips.size();
+        }
+    }
+
+    private void modelFromTrainingBuckets(int bucketSize, int testBucketNum, CompletionModel completionModel) {
         List<String> zips = IoHelper.findAllZips(contextsDir);
-        int zipTotal = zips.size();
+        int zipTotal = getNumZips(zips);
         int zipCount = 0;
+
         for (String zip : zips) {
-            double perc = 100 * zipCount / (double) zipTotal;
-            zipCount++;
 
             if (PRINT_PROGRESS) {
+                double perc = 100 * zipCount / (double) zipTotal;
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);
             }
 
-            try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
+            // if we are in one of the training buckets
+            if (zipCount < bucketSize * testBucketNum || zipCount >= (bucketSize * testBucketNum + 1)) {
+                try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
-                while (ra.hasNext()) {
-                    Context ctx = ra.getNext(Context.class);
+                    while (ra.hasNext()) {
+                        Context ctx = ra.getNext(Context.class);
 
-                    callback.onContextFound(ctx);
+                        completionModel.train(ctx);
+                    }
                 }
             }
+
+            if (zipCount++ >= zipTotal) break;
         }
+    }
+
+    private void performCrossValidation(int bucketSize, int testBucketNum, CompletionModel completionModel) {
+        List<String> zips = IoHelper.findAllZips(contextsDir);
+        int zipTotal = getNumZips(zips);
+        int zipCount = 0;
+        int samples = 0;
+        int successes = 0;
+
+        for (String zip : zips) {
+            if (PRINT_PROGRESS) {
+                double perc = 100 * zipCount / (double) zipTotal;
+                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
+                        perc);
+            }
+
+            // if we are in the test bucket
+            if (zipCount >= bucketSize * testBucketNum && zipCount < bucketSize * (testBucketNum + 1)) {
+                try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
+
+                    while (ra.hasNext()) {
+                        Context ctx = ra.getNext(Context.class);
+
+                        if (isCompletionProposalSuccess()) {
+                            successes++;
+                        }
+                        samples++;
+                    }
+                }
+            }
+
+            if (zipCount++ >= zipTotal) break;
+        }
+
+        System.out.printf("success rate = %.0f%%\n", (100.f * successes) / samples);
     }
 
     private void foreachCompletionEvent(OnEventFoundCallback callback) {
         List<String> zips = IoHelper.findAllZips(eventsDir);
-        int zipTotal = zips.size();
+        int zipTotal = getNumZips(zips);
         int zipCount = 0;
         for (String zip : zips) {
             double perc = 100 * zipCount / (double) zipTotal;
-            zipCount++;
 
             if (PRINT_PROGRESS) {
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
@@ -126,6 +186,8 @@ public class RecommenderHelper {
                     }
                 }
             }
+
+            if (zipCount++ >= zipTotal) break;
         }
     }
 }
