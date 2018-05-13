@@ -1,25 +1,51 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Recommender {
 
+    private List<IndexDocument> baseCandidates;
+    private List<IndexDocument> refinedCandidates;
+    private List<ScoredIndexDocument> scoredCandidates;
+    private List<IndexDocument> topThreeCandidates;
+    private IndexDocument receiverObj;
+
+    /**
+     * @param index inverted index structure (model) with which to suggest code completions
+     * @param receiverObj object, on which the code completion is called
+     */
+    public Recommender(InvertedIndex index, IndexDocument receiverObj) {
+        this.receiverObj = receiverObj;
+        baseCandidates = getBaseCandidates(index, receiverObj);
+        refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
+        scoredCandidates = sortRefindedCandidates(refinedCandidates, receiverObj);
+        topThreeCandidates = getTopThreeCandidates(scoredCandidates);
+    }
+
     /**
      * Get 3 code completion suggestions for the receiver object.
-     *
-     * @param index       inverted index structure (model) with which to suggest code completions
-     * @param receiverObj object, on which the code completion is called
+
      * @return names of the methods that are suggested for code completion
      */
-    public static List<String> getRecommendation(InvertedIndex index, IndexDocument receiverObj) {
-        List<IndexDocument> baseCandidates = getBaseCandidates(index, receiverObj);
-        List<IndexDocument> refinedCandidates = getRefinedCandidates(baseCandidates, receiverObj);
-        List<IndexDocument> topThreeCandidates = sortRefindedCandidatesAndGetTopThree(refinedCandidates, receiverObj);
+    public List<String> getTopThreeRecommendations() {
         List<String> recommendationsMethodNames = getMethodNames(topThreeCandidates);
         return recommendationsMethodNames;
+    }
+
+    public boolean containsTopThree(IndexDocument document) {
+        for (IndexDocument candidateDocument : topThreeCandidates) {
+            if (candidateDocument.getMethodCall().equals(document.getMethodCall())) return true;
+        }
+
+        return false;
+    }
+
+    public boolean contains(IndexDocument document) {
+        for (ScoredIndexDocument candidate : scoredCandidates) {
+            if (candidate.getMethodCall().equals(document.getMethodCall())) return true;
+        }
+
+        return false;
     }
 
     private static List<IndexDocument> getBaseCandidates(InvertedIndex index, IndexDocument receiverObj) {
@@ -28,7 +54,7 @@ public class Recommender {
         return baseCandidates;
     }
 
-    private static List<IndexDocument> getRefinedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
+    private static List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
         // TODO: test if this method does everything correctly
         int switchToLineContextThreshold = 30; // TODO: this threshold was picked at random and was never tested (maybe a good value is mentioned in the paper?)
         int k = 200;
@@ -44,7 +70,7 @@ public class Recommender {
         }
         scoredBaseCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
         // get the k top candidates
-        List<ScoredIndexDocument> refinedScoredCandidates = scoredBaseCandidates.subList(0, Math.min(k, scoredBaseCandidates.size()));
+        List<ScoredIndexDocument> refinedScoredCandidates = scoredBaseCandidates.subList(0, Math.min(k,scoredBaseCandidates.size()));
         List<IndexDocument> refinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : refinedScoredCandidates) {
             refinedCandidates.add(sid.getIndexDocumentWithoutScores());
@@ -52,10 +78,10 @@ public class Recommender {
         return refinedCandidates;
     }
 
-    private static List<IndexDocument> sortRefindedCandidatesAndGetTopThree(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
+    private static List<ScoredIndexDocument> sortRefindedCandidates(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
         // TODO: test if this method does everything correctly
         double filteringThreshold = 0.30;
-        int candidatesToSuggest = 3;
+
         List<ScoredIndexDocument> sortedRefinedScoredCandidates = new LinkedList<>();
         for (IndexDocument refinedCandidate : refinedCandidates) {
             double normLCS = refinedCandidate.normalizedLongestCommonSubsequenceLengthOverallContextToOther(receiverObj);
@@ -68,8 +94,15 @@ public class Recommender {
         sortedRefinedScoredCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
         // remove duplicates
         removeDuplicates(sortedRefinedScoredCandidates);
+
+        return sortedRefinedScoredCandidates;
+    }
+
+    private static List<IndexDocument> getTopThreeCandidates(List<ScoredIndexDocument> sortedRefinedScoredCandidates) {
+        final int CANDIDATES_TO_SUGGEST = 3;
         // get the top three
-        sortedRefinedScoredCandidates = sortedRefinedScoredCandidates.subList(0, Math.min(candidatesToSuggest - 1, sortedRefinedScoredCandidates.size()));
+        sortedRefinedScoredCandidates = sortedRefinedScoredCandidates.subList(0, Math.min(CANDIDATES_TO_SUGGEST - 1,
+                sortedRefinedScoredCandidates.size()));
         List<IndexDocument> sortedRefinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : sortedRefinedScoredCandidates) {
             sortedRefinedCandidates.add(sid.getIndexDocumentWithoutScores());
@@ -100,5 +133,4 @@ public class Recommender {
         }
         return methodNames;
     }
-
 }
