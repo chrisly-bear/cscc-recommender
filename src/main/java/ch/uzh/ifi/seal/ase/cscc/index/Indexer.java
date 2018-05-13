@@ -1,13 +1,17 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
 import cc.kave.commons.model.events.completionevents.Context;
+import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
+import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Indexer {
 
@@ -26,17 +30,19 @@ public class Indexer {
             try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
                 while (ra.hasNext()) {
                     Context ctx = ra.getNext(Context.class);
-                    IndexDocument doc = createIndexDocumentFromKaVEContext(ctx);
-                    index.indexDocument(doc);
+                    List<IndexDocument> indexDocuments = createIndexDocumentsFromKaVEContext(ctx);
+                    indexDocuments.forEach(index::indexDocument);
                 }
             }
         }
     }
 
-    private static IndexDocument createIndexDocumentFromKaVEContext(Context ctx) {
-        // TODO 3.1:
-        // build a IndexDocument object from a KaVE context
-        return null;
+    private static List<IndexDocument> createIndexDocumentsFromKaVEContext(Context ctx) {
+        ISST sst = ctx.getSST();
+        IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
+        List<IndexDocument> indexDocuments = Collections.emptyList();
+        sst.accept(indexDocumentExtractionVisitor, indexDocuments);
+        return indexDocuments;
     }
 
 }

@@ -14,7 +14,7 @@ import java.util.*;
 /**
  * Visitor that takes a body of statements into the visit method and returns a list of IndexDocuments
  */
-public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisitor<Void, IndexDocument> {
+public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisitor<List<IndexDocument>, Void> {
 
     // Constant determining how many statements backwards should be included in the overall context
     private final int LAST_N_CONSIDERED_STATEMENTS = 6;
@@ -22,9 +22,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
     private final ContextVisitor contextVisitor = new ContextVisitor();
 
     @Override
-    protected List<IndexDocument> visit(List<IStatement> body, Void aVoid) {
-
-        List<IndexDocument> indexDocuments = new ArrayList<>();
+    public List<Void> visit(List<IStatement> body, List<IndexDocument> indexDocuments) {
 
         for (IStatement statement : body) {
             if (statement instanceof IExpressionStatement) {
@@ -69,7 +67,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                 }
             }
         }
-        return indexDocuments;
+        return null;
     }
 
     /**
