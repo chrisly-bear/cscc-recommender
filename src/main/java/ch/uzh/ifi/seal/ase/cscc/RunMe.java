@@ -37,8 +37,9 @@ public class RunMe {
 
 	public static void main(String[] args) {
         try {
-            //new RecommenderHelper(contextsDir, eventsDir).performTenFoldCrossValidation();
-            new RecommenderHelper(contextsDir, eventsDir).learnModel("Data/Model");
+            new RecommenderHelper(contextsDir, eventsDir).performTenFoldCrossValidation();
+            //new RecommenderHelper(contextsDir, eventsDir).learnModel("Data/Model");
+            //new RecommenderHelper(contextsDir, eventsDir).evaluateModel("Data/Model");
         } catch (IOException e) {
             e.printStackTrace();
         }

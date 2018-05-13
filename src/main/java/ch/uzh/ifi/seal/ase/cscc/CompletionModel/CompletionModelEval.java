@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.CompletionModel;
 
+import cc.kave.commons.model.events.completionevents.IProposal;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.index.Recommender;
 

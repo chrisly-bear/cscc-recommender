@@ -15,6 +15,9 @@ import java.util.List;
 public class CompletionModel {
     private InvertedIndex index = new InvertedIndex();
 
+    public CompletionModel() {
+    }
+
     public void train(Context ctx) {
         ISST sst = ctx.getSST();
 
@@ -48,5 +51,11 @@ public class CompletionModel {
         }
 
         index.persistToDisk(modelOutputDir);
+    }
+
+    public static CompletionModel fromDisk(String modelDir) throws IOException {
+        CompletionModel model = new CompletionModel();
+        model.index.initializeFromDisk(modelDir);
+        return model;
     }
 }

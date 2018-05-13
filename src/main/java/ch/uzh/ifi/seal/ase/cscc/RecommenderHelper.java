@@ -5,6 +5,7 @@ import cc.kave.commons.model.events.completionevents.CompletionEvent;
 import cc.kave.commons.model.events.completionevents.Context;
 import cc.kave.commons.model.events.completionevents.IProposal;
 import cc.kave.commons.model.events.completionevents.TerminationState;
+import cc.kave.commons.model.naming.codeelements.IMethodName;
 import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
@@ -19,6 +20,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RecommenderHelper {
     private static final boolean PRINT_PROGRESS = false;
@@ -96,17 +99,62 @@ public class RecommenderHelper {
      *
      * @param modelDir directory of the learned model
      */
-    public void evaluateModel(String modelDir) {
-        foreachCompletionEvent((CompletionEvent event) -> {
-            Context ctx = event.context;
-            if (event.terminatedState == TerminationState.Applied && event.getLastSelectedProposal() != null) {
-                System.out.println("completion event, out of proposals");
-                for (IProposal proposal : event.proposalCollection) {
-                    System.out.println("  " + proposal.getName());
-                }
-                System.out.println("selected " + event.getLastSelectedProposal().getName());
+    public void evaluateModel(String modelDir) throws IOException {
+        List<String> zips = IoHelper.findAllZips(eventsDir);
+        int zipTotal = getNumZips(zips);
+        int zipCount = 0;
+
+        CompletionModel model = CompletionModel.fromDisk(modelDir);
+        CompletionModelEval eval = new CompletionModelEval(model);
+
+        for (String zip : zips) {
+            double perc = 100 * zipCount / (double) zipTotal;
+
+            if (PRINT_PROGRESS) {
+                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
+                        perc);
             }
-        });
+
+            try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
+
+                while (ra.hasNext()) {
+                    IDEEvent evt = ra.getNext(IDEEvent.class);
+
+                    if (evt instanceof CompletionEvent) {
+                        CompletionEvent event = (CompletionEvent) evt;
+
+                        if (event.terminatedState == TerminationState.Applied && event.getLastSelectedProposal() != null) {
+                            if (event.getLastSelectedProposal().getName() instanceof IMethodName) {
+                                IMethodName methodName = (IMethodName) event.getLastSelectedProposal().getName();
+
+                                IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
+                                List<IndexDocument> indexDocuments = new LinkedList<>();
+
+                                event.context.getSST().accept(indexDocumentExtractionVisitor, indexDocuments);
+
+                                for (IndexDocument document : indexDocuments) {
+                                    // only evaluate for the IndexDocument that correlates with the given method call
+
+                                    if (document.getMethodCall().equals(methodName.getName())) {
+                                        eval.evaluate(document);
+                                    }
+                                }
+                            }
+
+                            /*System.out.println("completion event, out of proposals");
+                            for (IProposal proposal : event.proposalCollection) {
+                                System.out.println("  " + proposal.getName().getIdentifier());
+                            }
+                            System.out.println("selected " + event.getLastSelectedProposal().getName().getIdentifier());*/
+                        }
+                    }
+                }
+            }
+
+            if (zipCount++ >= zipTotal) break;
+        }
+
+        System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
     }
 
     private int getNumZips(List<String> zips) {
@@ -185,32 +233,5 @@ public class RecommenderHelper {
         }
 
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
-    }
-
-    private void foreachCompletionEvent(OnEventFoundCallback callback) {
-        List<String> zips = IoHelper.findAllZips(eventsDir);
-        int zipTotal = getNumZips(zips);
-        int zipCount = 0;
-        for (String zip : zips) {
-            double perc = 100 * zipCount / (double) zipTotal;
-
-            if (PRINT_PROGRESS) {
-                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
-                        perc);
-            }
-
-            try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
-
-                while (ra.hasNext()) {
-                    IDEEvent evt = ra.getNext(IDEEvent.class);
-
-                    if (evt instanceof CompletionEvent) {
-                        callback.onEventFound((CompletionEvent) evt);
-                    }
-                }
-            }
-
-            if (zipCount++ >= zipTotal) break;
-        }
     }
 }
