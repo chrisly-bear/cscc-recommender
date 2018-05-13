@@ -15,7 +15,7 @@ import java.util.Set;
 public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, Void> {
     @Override
     public Void visit(IVariableDeclaration stmt, Set<String> overallContext) {
-        // Add the identifier of the variable and add it to context
+        // Add the identifier of the variable to the overall context
         overallContext.add(stmt.getType().getName());
         return null;
     }
@@ -26,7 +26,7 @@ public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, V
         overallContext.add(decl.getName().getReturnType().getName());
         // Add the method name itself to the overall context
         overallContext.add(decl.getName().getName());
-        // Add the types of the parameters
+        // Add the types of the parameters to the overall context
         for(IParameterName iParameterName : decl.getName().getParameters()) {
             overallContext.add(iParameterName.getValueType().getName());
         }
@@ -35,7 +35,7 @@ public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, V
 
     @Override
     public Void visit(IInvocationExpression expr, Set<String> overallContext) {
-        // Add the na
+        // Add the name of invoked the method to the overall context
         overallContext.add(expr.getMethodName().getName());
         return null;
     }
