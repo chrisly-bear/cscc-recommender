@@ -15,16 +15,6 @@ import java.util.List;
 public class CompletionModel {
     private InvertedIndex index = new InvertedIndex();
 
-    public CompletionModel(/*String modelOutputDir*/) /*throws IOException*/ {
-        /*Path path = Paths.get(modelOutputDir);
-
-        try {
-            if (!isDirectoryEmpty(path)) throw new IOException("provided non-empty directory");
-        } catch (NoSuchFileException e) {
-            Files.createDirectory(path);
-        }*/
-    }
-
     public void train(Context ctx) {
         ISST sst = ctx.getSST();
 
@@ -46,5 +36,17 @@ public class CompletionModel {
 
     public Recommender getRecommender(IndexDocument document) {
         return new Recommender(index, document);
+    }
+
+    public void store(String modelOutputDir) throws IOException {
+        Path path = Paths.get(modelOutputDir);
+
+        try {
+            if (!isDirectoryEmpty(path)) throw new IOException("provided non-empty directory");
+        } catch (NoSuchFileException e) {
+            Files.createDirectory(path);
+        }
+
+        index.persistToDisk(modelOutputDir);
     }
 }

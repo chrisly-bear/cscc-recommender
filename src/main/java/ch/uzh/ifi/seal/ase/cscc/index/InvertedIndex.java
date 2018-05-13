@@ -93,7 +93,8 @@ public class InvertedIndex {
                 fileOut.close();
 //                System.out.println("Serialized data is saved in " + contextPath);
             } catch (IOException e) {
-                e.printStackTrace();
+                // ignore for now
+                // TODO investigate question marks as method names
             }
         }
     }
@@ -102,8 +103,8 @@ public class InvertedIndex {
         String typeDirPath = invertedIndexStructuresDir + "/" + invertedIndexStructure.representedType;
         File typeDir = new File(typeDirPath);
         typeDir.mkdir();
-        try {
-            for (String methodName : invertedIndexStructure.index.keySet()) {
+        for (String methodName : invertedIndexStructure.index.keySet()) {
+            try {
                 String postingsListPath = typeDirPath + "/" + methodName;
                 BufferedWriter invertedIndexStructureWriter = new BufferedWriter(new FileWriter(postingsListPath));
 
@@ -112,9 +113,10 @@ public class InvertedIndex {
                     invertedIndexStructureWriter.newLine();
                 }
                 invertedIndexStructureWriter.close();
+            } catch (IOException e) {
+                // ignore for now
+                // TODO investigate question marks as method names
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

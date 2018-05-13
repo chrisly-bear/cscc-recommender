@@ -60,8 +60,34 @@ public class RecommenderHelper {
      *
      * @param modelOutputDir an empty directory where to store the learned model
      */
-    public void learnModel(String modelOutputDir) {
+    public void learnModel(String modelOutputDir) throws IOException {
+        List<String> zips = IoHelper.findAllZips(contextsDir);
+        int zipTotal = getNumZips(zips);
+        int zipCount = 0;
 
+        CompletionModel completionModel = new CompletionModel();
+
+        for (String zip : zips) {
+
+            if (PRINT_PROGRESS) {
+                double perc = 100 * zipCount / (double) zipTotal;
+                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
+                        perc);
+            }
+
+            try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
+
+                while (ra.hasNext()) {
+                    Context ctx = ra.getNext(Context.class);
+
+                    completionModel.train(ctx);
+                }
+            }
+
+            if (zipCount++ >= zipTotal) break;
+        }
+
+        completionModel.store(modelOutputDir);
     }
 
     /**
