@@ -50,7 +50,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                     // Take this statement and visit it to extract the information needed for the line context
                     statement.accept(contextVisitor, lineContext);
 
-                    // If the line context only contains the method invocation we dedected, the line context is empty
+                    // If the line context only contains the method invocation we detected, the line context is empty
                     if (lineContext.contains(methodCall)) {
                         lineContext.remove(methodCall);
                     }
