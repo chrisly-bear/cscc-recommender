@@ -23,7 +23,6 @@ public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, V
     @Override
     public Void visit(IMethodDeclaration decl, Set<String> overallContext) {
         // Add the return type to the overall context
-        System.out.println("Method declaration " + decl.getName().getName());
         overallContext.add(decl.getName().getReturnType().getName());
         // Add the method name itself to the overall context
         overallContext.add(decl.getName().getName());
