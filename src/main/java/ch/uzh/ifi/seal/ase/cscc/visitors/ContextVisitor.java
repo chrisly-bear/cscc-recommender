@@ -31,9 +31,6 @@ public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, V
         for(IParameterName iParameterName : decl.getName().getParameters()) {
             overallContext.add(iParameterName.getValueType().getName());
         }
-        for(ITypeParameterName iParameterName : decl.getName().getTypeParameters()) {
-            overallContext.add(iParameterName.getTypeParameterType().getName());
-        }
         return null;
     }
 
