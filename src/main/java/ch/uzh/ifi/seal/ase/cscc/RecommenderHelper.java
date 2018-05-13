@@ -9,6 +9,7 @@ import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
+import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEval;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
@@ -33,9 +34,6 @@ public class RecommenderHelper {
 
     /**
      * Perform 10-fold cross-validation on the Contexts data set.
-     * Used the local method isCompletionProposalSuccess to determine if a proposal was good.
-     * Default behavior is to count it as a success if the chosen method name completion was among the top
-     * 3 proposals.
      * Test results are printed to the console.
      */
     public void performTenFoldCrossValidation() throws IOException {
@@ -68,9 +66,6 @@ public class RecommenderHelper {
 
     /**
      * Evaluates a learned model against the Events data set.
-     * Used the local method isCompletionProposalSuccess to determine if a proposal was good.
-     * Default behavior is to count it as a success if the chosen method name completion was among the top
-     * 3 proposals.
      * Test results are printed to the console.
      *
      * @param modelDir directory of the learned model
@@ -86,19 +81,6 @@ public class RecommenderHelper {
                 System.out.println("selected " + event.getLastSelectedProposal().getName());
             }
         });
-    }
-
-    /**
-     * Return success if method name completion is in top 3 recommendations
-     */
-    private boolean isCompletionProposalSuccess(CompletionModel model, IndexDocument document) {
-        List<String> recommendations = model.recommendFor(document);
-
-        for (String recommendation : recommendations) {
-            if (document.getMethodCall().equals(recommendation)) return true;
-        }
-
-        return false;
     }
 
     private int getNumZips(List<String> zips) {
@@ -142,8 +124,8 @@ public class RecommenderHelper {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
-        int samples = 0;
-        int successes = 0;
+
+        CompletionModelEval eval = new CompletionModelEval(completionModel);
 
         for (String zip : zips) {
             if (PRINT_PROGRESS) {
@@ -167,10 +149,7 @@ public class RecommenderHelper {
                         sst.accept(indexDocumentExtractionVisitor, indexDocuments);
 
                         for (IndexDocument document : indexDocuments) {
-                            if (isCompletionProposalSuccess(completionModel, document)) {
-                                successes++;
-                            }
-                            samples++;
+                            eval.evaluate(document);
                         }
                     }
                 }
@@ -179,7 +158,7 @@ public class RecommenderHelper {
             if (zipCount++ >= zipTotal) break;
         }
 
-        System.out.printf("success rate = %.0f%%\n", (100.f * successes) / samples);
+        System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
     }
 
     private void foreachCompletionEvent(OnEventFoundCallback callback) {

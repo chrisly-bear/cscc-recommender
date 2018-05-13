@@ -44,7 +44,7 @@ public class CompletionModel {
         }
     }
 
-    public List<String> recommendFor(IndexDocument document) {
-        return Recommender.getRecommendation(index, document);
+    public Recommender getRecommender(IndexDocument document) {
+        return new Recommender(index, document);
     }
 }
