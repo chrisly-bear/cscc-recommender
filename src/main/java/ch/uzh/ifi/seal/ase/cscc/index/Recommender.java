@@ -12,7 +12,7 @@ public class Recommender {
      */
     public static List<String> getRecommendation(InvertedIndex index, IndexDocument receiverObj) {
         List<IndexDocument> baseCandidates = getBaseCandidates(index, receiverObj);
-        List<IndexDocument> refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
+        List<IndexDocument> refinedCandidates = getRefinedCandidates(baseCandidates, receiverObj);
         List<IndexDocument> topThreeCandidates = sortRefindedCandidatesAndGetTopThree(refinedCandidates, receiverObj);
         List<String> recommendationsMethodNames = getMethodNames(topThreeCandidates);
         return recommendationsMethodNames;
@@ -24,7 +24,7 @@ public class Recommender {
         return baseCandidates;
     }
 
-    private static List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
+    private static List<IndexDocument> getRefinedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
         // TODO: test if this method does everything correctly
         int switchToLineContextThreshold = 30; // TODO: this threshold was picked at random and was never tested (maybe a good value is mentioned in the paper?)
         int k = 200;
@@ -35,7 +35,7 @@ public class Recommender {
             int overallContextDistance = baseCandidate.overallContextHammingDistanceToOther(receiverObj);
             int viableDistance = overallContextDistance > switchToLineContextThreshold ? lineContextDistance : overallContextDistance;
             // we take the negative distance so that after sorting, candidates with lower distance (i.e. higher score) will come first
-            ScoredIndexDocument scoredDoc = new ScoredIndexDocument(baseCandidate, -viableDistance, 0);
+            ScoredIndexDocument scoredDoc = new ScoredIndexDocument(baseCandidate, -viableDistance  , 0);
             scoredBaseCandidates.add(scoredDoc);
         }
         scoredBaseCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
