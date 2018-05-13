@@ -8,6 +8,8 @@ import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 
 import java.io.File;
+import java.nio.file.Paths;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -35,6 +37,7 @@ public class Indexer {
                 }
             }
         }
+        index.persistToDisk(Paths.get("").toAbsolutePath().toString()+"/serializedIndex");
     }
 
     private static List<IndexDocument> createIndexDocumentsFromKaVEContext(Context ctx) {
