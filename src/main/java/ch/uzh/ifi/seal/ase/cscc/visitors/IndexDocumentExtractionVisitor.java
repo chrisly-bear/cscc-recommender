@@ -16,6 +16,7 @@ import java.util.*;
  */
 public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisitor<Void, IndexDocument> {
 
+    // Constant determining how many statements backwards should be included in the overall context
     private final int LAST_N_CONSIDERED_STATEMENTS = 6;
 
     private final ContextVisitor contextVisitor = new ContextVisitor();
@@ -35,7 +36,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                     String methodCall = ((IInvocationExpression) expression).getMethodName().getName();
 
                     // Retrieve the name of the type on which the method was invoked:
-                    String type = findTypeOfVariableOnWhichMethodWasInvoked(body, ((IInvocationExpression) expression).getReference().getIdentifier());
+                    String type = findTypeOfVariable(body, ((IInvocationExpression) expression).getReference().getIdentifier());
 
                     // Get the last n statements before our method invocation
                     List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
@@ -71,13 +72,19 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
         return indexDocuments;
     }
 
-    private String findTypeOfVariableOnWhichMethodWasInvoked(List<IStatement> statements, String identifier) {
+    /**
+     * Takes a list of statements and a variable identifier and returns the type of the variable
+     * @param statements The list of statements that should be searched for the matching variable type
+     * @param identifier The identifier (i.e. name) of the variable for which the type should be found
+     * @return The full name of the type of the variable if found, empty string if not found
+     */
+    private String findTypeOfVariable(List<IStatement> statements, String identifier) {
         String result = "";
         for (IStatement iStatement : statements) {
             if (iStatement instanceof VariableDeclaration) {
                 String identifierOfThisDeclaration = ((VariableDeclaration) iStatement).getReference().getIdentifier();
                 if (identifier.equals(identifierOfThisDeclaration)) {
-                    String type = ((VariableDeclaration) iStatement).getType().getName();
+                    String type = ((VariableDeclaration) iStatement).getType().getFullName();
                     result = type;
                 }
             }

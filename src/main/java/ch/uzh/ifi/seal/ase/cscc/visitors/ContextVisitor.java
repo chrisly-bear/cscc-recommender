@@ -31,14 +31,12 @@ public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, V
         for(IParameterName iParameterName : decl.getName().getParameters()) {
             overallContext.add(iParameterName.getValueType().getName());
         }
-        for(ITypeParameterName iParameterName : decl.getName().getTypeParameters()) {
-            overallContext.add(iParameterName.getTypeParameterType().getName());
-        }
         return null;
     }
 
     @Override
     public Void visit(IInvocationExpression expr, Set<String> overallContext) {
+        // Add the na
         overallContext.add(expr.getMethodName().getName());
         return null;
     }
