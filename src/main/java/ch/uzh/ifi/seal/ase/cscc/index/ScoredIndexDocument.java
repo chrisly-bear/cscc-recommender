@@ -33,6 +33,7 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
 
     /**
      * Removes the scores and returns only the underlying IndexDocument
+     *
      * @return IndexDocument without the scores
      */
     public IndexDocument getIndexDocumentWithoutScores() {

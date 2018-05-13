@@ -1,13 +1,9 @@
 package ch.uzh.ifi.seal.ase.cscc.visitors;
 
 import cc.kave.commons.model.naming.codeelements.IParameterName;
-import cc.kave.commons.model.naming.types.ITypeParameterName;
-import cc.kave.commons.model.ssts.declarations.IDelegateDeclaration;
 import cc.kave.commons.model.ssts.declarations.IMethodDeclaration;
 import cc.kave.commons.model.ssts.expressions.assignable.IInvocationExpression;
-import cc.kave.commons.model.ssts.expressions.assignable.ILambdaExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
-import cc.kave.commons.model.ssts.references.IVariableReference;
 import cc.kave.commons.model.ssts.statements.IVariableDeclaration;
 
 import java.util.Set;
@@ -27,7 +23,7 @@ public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, V
         // Add the method name itself to the overall context
         overallContext.add(decl.getName().getName());
         // Add the types of the parameters to the overall context
-        for(IParameterName iParameterName : decl.getName().getParameters()) {
+        for (IParameterName iParameterName : decl.getName().getParameters()) {
             overallContext.add(iParameterName.getValueType().getName());
         }
         return null;

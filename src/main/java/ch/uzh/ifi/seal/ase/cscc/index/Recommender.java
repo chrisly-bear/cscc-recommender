@@ -1,12 +1,16 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class Recommender {
 
     /**
      * Get 3 code completion suggestions for the receiver object.
-     * @param index inverted index structure (model) with which to suggest code completions
+     *
+     * @param index       inverted index structure (model) with which to suggest code completions
      * @param receiverObj object, on which the code completion is called
      * @return names of the methods that are suggested for code completion
      */
@@ -35,12 +39,12 @@ public class Recommender {
             int overallContextDistance = baseCandidate.overallContextHammingDistanceToOther(receiverObj);
             int viableDistance = overallContextDistance > switchToLineContextThreshold ? lineContextDistance : overallContextDistance;
             // we take the negative distance so that after sorting, candidates with lower distance (i.e. higher score) will come first
-            ScoredIndexDocument scoredDoc = new ScoredIndexDocument(baseCandidate, -viableDistance  , 0);
+            ScoredIndexDocument scoredDoc = new ScoredIndexDocument(baseCandidate, -viableDistance, 0);
             scoredBaseCandidates.add(scoredDoc);
         }
         scoredBaseCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
         // get the k top candidates
-        List<ScoredIndexDocument> refinedScoredCandidates = scoredBaseCandidates.subList(0, Math.min(k,scoredBaseCandidates.size()));
+        List<ScoredIndexDocument> refinedScoredCandidates = scoredBaseCandidates.subList(0, Math.min(k, scoredBaseCandidates.size()));
         List<IndexDocument> refinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : refinedScoredCandidates) {
             refinedCandidates.add(sid.getIndexDocumentWithoutScores());
@@ -65,7 +69,7 @@ public class Recommender {
         // remove duplicates
         removeDuplicates(sortedRefinedScoredCandidates);
         // get the top three
-        sortedRefinedScoredCandidates = sortedRefinedScoredCandidates.subList(0, Math.min(candidatesToSuggest-1, sortedRefinedScoredCandidates.size()));
+        sortedRefinedScoredCandidates = sortedRefinedScoredCandidates.subList(0, Math.min(candidatesToSuggest - 1, sortedRefinedScoredCandidates.size()));
         List<IndexDocument> sortedRefinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : sortedRefinedScoredCandidates) {
             sortedRefinedCandidates.add(sid.getIndexDocumentWithoutScores());

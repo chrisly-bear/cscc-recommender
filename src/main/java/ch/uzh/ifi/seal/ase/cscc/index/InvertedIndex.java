@@ -1,6 +1,7 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
 import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.util.*;
 
@@ -12,6 +13,7 @@ public class InvertedIndex {
 
     /**
      * Indexes doc in the two-level inverted index.
+     *
      * @param doc document which to put in index
      */
     public void indexDocument(IndexDocument doc) {
@@ -27,6 +29,7 @@ public class InvertedIndex {
     /**
      * Searches for all documents which map doc's type and contain similar terms in the overall context as doc.
      * The query equals a boolean OR query of all terms in the overall context of doc.
+     *
      * @param doc document for which to find similar documents
      * @return documents which are similar to doc, i.e. documents whose overall context has at least one term in common with doc's overall context
      */
@@ -43,6 +46,7 @@ public class InvertedIndex {
     /**
      * Warning: If {@code targetDir} already contains a persisted inverted index, that
      * inverted index will be overwritten.
+     *
      * @param targetDir directory in which to store the inverted index
      */
     public void persistToDisk(String targetDir) {
@@ -159,7 +163,8 @@ public class InvertedIndex {
     /**
      * Creates InvertedIndexStructures from postings files stored in {@code pathToInvertedIndexStructures}
      * and puts them into the main index (INDEX 1).
-     * @param docIdIndexDocumentMap Maps document IDs with IndexDocument objects.
+     *
+     * @param docIdIndexDocumentMap         Maps document IDs with IndexDocument objects.
      * @param pathToInvertedIndexStructures Directory in which the InvertedIndexStructures are stored.
      */
     private void initializeInvertedIndexStructures(Map<String, IndexDocument> docIdIndexDocumentMap, String pathToInvertedIndexStructures) {
@@ -242,13 +247,14 @@ public class InvertedIndex {
 
         /**
          * Instantiates this InvertedIndexStructure instance from postings lists stored on disk.
+         *
          * @param dirContainingPostingsLists Directory where postings files are stored. The directory must have
          *                                   the name of the type this instance represents, e.g.
          *                                   {@code javax.swing.JInternalFrame}. Within this directory, each file should
          *                                   have the name of the index term (i.e. the method name) and contain a set
          *                                   of newline separated document IDs of documents (contexts) which contain the
          *                                   term.
-         * @param idIndexDocumentMap Maps document IDs to IndexDocument objects.
+         * @param idIndexDocumentMap         Maps document IDs to IndexDocument objects.
          */
         private void initializeFromDisk(File dirContainingPostingsLists, Map<String, IndexDocument> idIndexDocumentMap) {
             if (!dirContainingPostingsLists.isDirectory()) {

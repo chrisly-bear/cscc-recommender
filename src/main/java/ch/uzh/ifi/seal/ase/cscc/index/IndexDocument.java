@@ -1,13 +1,13 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
+import com.github.tomtung.jsimhash.SimHashBuilder;
+import com.github.tomtung.jsimhash.Util;
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.commons.text.similarity.LongestCommonSubsequence;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
-import com.github.tomtung.jsimhash.*;
-import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.apache.commons.text.similarity.LevenshteinResults;
-import org.apache.commons.text.similarity.LongestCommonSubsequence;
-import org.apache.commons.text.similarity.LongestCommonSubsequenceDistance;
 
 public class IndexDocument implements Serializable {
 
@@ -93,33 +93,35 @@ public class IndexDocument implements Serializable {
 
     /**
      * Compares the overall context of `this` to `other`
+     *
      * @param other document to compare this one to
      * @return value between [0,1] where
-     *         0 means documents' overall contexts are completely different,
-     *         1 means documents' overall contexts are identical
+     * 0 means documents' overall contexts are completely different,
+     * 1 means documents' overall contexts are identical
      */
     public double normalizedLongestCommonSubsequenceLengthOverallContextToOther(IndexDocument other) {
         String left = concatenate(getOverallContext());
         String right = concatenate(other.getOverallContext());
         int maxLength = Math.max(left.length(), right.length());
         double lcs = new LongestCommonSubsequence().apply(left, right);
-        double lcsNorm = lcs/maxLength;
+        double lcsNorm = lcs / maxLength;
         return lcsNorm;
     }
 
     /**
      * Compares the line context of `this` to `other`
+     *
      * @param other document to compare this one to
      * @return value between [0,1] where
-     *         0 means documents' line contexts are completely different,
-     *         1 means documents' line contexts are identical
+     * 0 means documents' line contexts are completely different,
+     * 1 means documents' line contexts are identical
      */
     public double normalizedLevenshteinDistanceLineContextToOther(IndexDocument other) {
         String left = concatenate(getLineContext());
         String right = concatenate(other.getLineContext());
         int maxLength = Math.max(left.length(), right.length());
         double lev = LevenshteinDistance.getDefaultInstance().apply(left, right);
-        double levNorm = 1 - (lev/maxLength);
+        double levNorm = 1 - (lev / maxLength);
         return levNorm;
     }
 

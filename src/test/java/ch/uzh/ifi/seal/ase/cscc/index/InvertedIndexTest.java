@@ -8,7 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class InvertedIndexTest {
 
@@ -19,6 +20,20 @@ public class InvertedIndexTest {
     private IndexDocument receiverObj1 = new IndexDocument(null, "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
             "toLowerCase", "context"
     ));
+
+    private static void printAnswers(Set<IndexDocument> answers) {
+        for (IndexDocument doc : answers) {
+            System.out.println("   " + doc);
+        }
+    }
+
+    private static Set<String> getMethodNames(Set<IndexDocument> docs) {
+        Set<String> methodNames = new HashSet<>();
+        for (IndexDocument doc : docs) {
+            methodNames.add(doc.getMethodCall());
+        }
+        return methodNames;
+    }
 
     @Before
     public void setUp() {
@@ -57,20 +72,6 @@ public class InvertedIndexTest {
         assertTrue(methodNames.contains("explode"));
         assertTrue(methodNames.contains("flyAway"));
         assertTrue(methodNames.contains("identify"));
-    }
-
-    private static void printAnswers(Set<IndexDocument> answers) {
-        for (IndexDocument doc : answers) {
-            System.out.println("   " + doc);
-        }
-    }
-
-    private static Set<String> getMethodNames(Set<IndexDocument> docs) {
-        Set<String> methodNames = new HashSet<>();
-        for (IndexDocument doc : docs) {
-            methodNames.add(doc.getMethodCall());
-        }
-        return methodNames;
     }
 
     @Test
