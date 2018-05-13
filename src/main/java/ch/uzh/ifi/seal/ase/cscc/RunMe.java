@@ -35,7 +35,7 @@ public class RunMe {
 	public static String contextsDir = "Data/Contexts";
 
 	public static void main(String[] args) {
-        processAllContexts();
+        new RecommenderHelper(contextsDir, eventsDir).performTenFoldCrossValidation("Data/Model");
 	}
 
     private static void processAllContexts() {
