@@ -8,6 +8,7 @@ import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +40,7 @@ public class Indexer {
     private static List<IndexDocument> createIndexDocumentsFromKaVEContext(Context ctx) {
         ISST sst = ctx.getSST();
         IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
-        List<IndexDocument> indexDocuments = Collections.emptyList();
+        List<IndexDocument> indexDocuments = new ArrayList<>();
         sst.accept(indexDocumentExtractionVisitor, indexDocuments);
         return indexDocuments;
     }
