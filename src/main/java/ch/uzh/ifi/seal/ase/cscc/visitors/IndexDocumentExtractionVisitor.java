@@ -31,24 +31,26 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                 if (expression instanceof IInvocationExpression) {
                     // We have detected a method invocation
 
-                    // We can retrieve the simple name (not the full name) of the invocated method like this:
+                    // Retrieve the simple name (not the full name) of the invoked method
                     String methodCall = ((IInvocationExpression) expression).getMethodName().getName();
 
-                    // We can also retrieve the name of the type on which the method was invocated like this:
-                    String type = findTypeOfVariableOnWhichMethodWasInvocated(body, ((IInvocationExpression) expression).getReference().getIdentifier());
+                    // Retrieve the name of the type on which the method was invoked:
+                    String type = findTypeOfVariableOnWhichMethodWasInvoked(body, ((IInvocationExpression) expression).getReference().getIdentifier());
 
-                    // Now we get the last n statements before our method invocation
+                    // Get the last n statements before our method invocation
                     List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
 
                     Set<String> overallContext = new HashSet<>();
                     Set<String> lineContext = new HashSet<>();
 
+                    // Visit every statement seperately and extract the information needed for the overall context
                     lastNStatements.forEach(iStatement -> iStatement.accept(contextVisitor, overallContext));
 
+                    // Take this statement and visit it to extract the information needed for the line context
                     statement.accept(contextVisitor, lineContext);
 
+                    // If the line context only contains the method invocation we dedected, the line context is empty
                     if (lineContext.contains(methodCall)) {
-                        System.out.println("Line context would be the same as the name of the method, make line context empty");
                         lineContext.remove(methodCall);
                     }
 
@@ -60,16 +62,16 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
 
                     IndexDocument indexDocument = new IndexDocument(methodCall, type, lineContextList, overallContextList);
 
-                    System.out.println(indexDocument.toString());
+                    indexDocuments.add(indexDocument);
 
                     // TODO Get Java keywords
                 }
             }
         }
-        return Collections.emptyList();
+        return indexDocuments;
     }
 
-    private String findTypeOfVariableOnWhichMethodWasInvocated(List<IStatement> statements, String identifier) {
+    private String findTypeOfVariableOnWhichMethodWasInvoked(List<IStatement> statements, String identifier) {
         String result = "";
         for (IStatement iStatement : statements) {
             if (iStatement instanceof VariableDeclaration) {
