@@ -42,7 +42,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                     Set<String> overallContext = new HashSet<>();
                     Set<String> lineContext = new HashSet<>();
 
-                    // Visit every statement seperately and extract the information needed for the overall context
+                    // Visit every statement separately and extract the information needed for the overall context
                     lastNStatements.forEach(iStatement -> iStatement.accept(contextVisitor, overallContext));
 
                     // Take this statement and visit it to extract the information needed for the line context
