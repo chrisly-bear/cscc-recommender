@@ -1,6 +1,9 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class Recommender {
 
@@ -11,7 +14,7 @@ public class Recommender {
     private IndexDocument receiverObj;
 
     /**
-     * @param index inverted index structure (model) with which to suggest code completions
+     * @param index       inverted index structure (model) with which to suggest code completions
      * @param receiverObj object, on which the code completion is called
      */
     public Recommender(InvertedIndex index, IndexDocument receiverObj) {
@@ -20,32 +23,6 @@ public class Recommender {
         refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
         scoredCandidates = sortRefindedCandidates(refinedCandidates, receiverObj);
         topThreeCandidates = getTopThreeCandidates(scoredCandidates);
-    }
-
-    /**
-     * Get 3 code completion suggestions for the receiver object.
-
-     * @return names of the methods that are suggested for code completion
-     */
-    public List<String> getTopThreeRecommendations() {
-        List<String> recommendationsMethodNames = getMethodNames(topThreeCandidates);
-        return recommendationsMethodNames;
-    }
-
-    public boolean containsTopThree(IndexDocument document) {
-        for (IndexDocument candidateDocument : topThreeCandidates) {
-            if (candidateDocument.getMethodCall().equals(document.getMethodCall())) return true;
-        }
-
-        return false;
-    }
-
-    public boolean contains(IndexDocument document) {
-        for (ScoredIndexDocument candidate : scoredCandidates) {
-            if (candidate.getMethodCall().equals(document.getMethodCall())) return true;
-        }
-
-        return false;
     }
 
     private static List<IndexDocument> getBaseCandidates(InvertedIndex index, IndexDocument receiverObj) {
@@ -70,7 +47,7 @@ public class Recommender {
         }
         scoredBaseCandidates.sort(null); // compare using the Comparable interface implemented in ScoredIndexDocument
         // get the k top candidates
-        List<ScoredIndexDocument> refinedScoredCandidates = scoredBaseCandidates.subList(0, Math.min(k,scoredBaseCandidates.size()));
+        List<ScoredIndexDocument> refinedScoredCandidates = scoredBaseCandidates.subList(0, Math.min(k, scoredBaseCandidates.size()));
         List<IndexDocument> refinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : refinedScoredCandidates) {
             refinedCandidates.add(sid.getIndexDocumentWithoutScores());
@@ -132,5 +109,31 @@ public class Recommender {
             methodNames.add(doc.getMethodCall());
         }
         return methodNames;
+    }
+
+    /**
+     * Get 3 code completion suggestions for the receiver object.
+     *
+     * @return names of the methods that are suggested for code completion
+     */
+    public List<String> getTopThreeRecommendations() {
+        List<String> recommendationsMethodNames = getMethodNames(topThreeCandidates);
+        return recommendationsMethodNames;
+    }
+
+    public boolean containsTopThree(IndexDocument document) {
+        for (IndexDocument candidateDocument : topThreeCandidates) {
+            if (candidateDocument.getMethodCall().equals(document.getMethodCall())) return true;
+        }
+
+        return false;
+    }
+
+    public boolean contains(IndexDocument document) {
+        for (ScoredIndexDocument candidate : scoredCandidates) {
+            if (candidate.getMethodCall().equals(document.getMethodCall())) return true;
+        }
+
+        return false;
     }
 }

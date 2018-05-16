@@ -1,16 +1,13 @@
 package ch.uzh.ifi.seal.ase.cscc.visitors;
 
 import cc.kave.commons.model.naming.codeelements.IParameterName;
-import cc.kave.commons.model.ssts.blocks.*;
+import cc.kave.commons.model.ssts.blocks.ICatchBlock;
+import cc.kave.commons.model.ssts.blocks.IForEachLoop;
+import cc.kave.commons.model.ssts.blocks.ITryBlock;
 import cc.kave.commons.model.ssts.declarations.IMethodDeclaration;
 import cc.kave.commons.model.ssts.expressions.assignable.ICastExpression;
-import cc.kave.commons.model.ssts.expressions.assignable.IIfElseExpression;
-import cc.kave.commons.model.ssts.expressions.assignable.IInvocationExpression;
-import cc.kave.commons.model.ssts.expressions.assignable.ITypeCheckExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
-import cc.kave.commons.model.ssts.statements.*;
-
-import java.util.Set;
+import cc.kave.commons.model.ssts.statements.IVariableDeclaration;
 
 public class VariableTypeFindingVisitor extends AbstractTraversingNodeVisitor<String, Void> {
 
@@ -27,7 +24,7 @@ public class VariableTypeFindingVisitor extends AbstractTraversingNodeVisitor<St
 
     @Override
     public Void visit(IVariableDeclaration stmt, String typeName) {
-        if(matchesIdentifier(stmt.getReference().getIdentifier())) {
+        if (matchesIdentifier(stmt.getReference().getIdentifier())) {
             typeName = stmt.getType().getName();
         }
         return null;

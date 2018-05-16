@@ -1,16 +1,13 @@
 package ch.uzh.ifi.seal.ase.cscc.visitors;
 
-import cc.kave.commons.model.naming.types.ITypeName;
 import cc.kave.commons.model.ssts.IStatement;
 import cc.kave.commons.model.ssts.expressions.IAssignableExpression;
 import cc.kave.commons.model.ssts.expressions.assignable.IInvocationExpression;
-import cc.kave.commons.model.ssts.impl.statements.VariableDeclaration;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.statements.IExpressionStatement;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 
 /**
@@ -80,13 +77,12 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
     }
 
     /**
-     *
-     * @param statements A list of statements
-     * @param indexOfStatement The index of the statement from where the method should go backwards
+     * @param statements                A list of statements
+     * @param indexOfStatement          The index of the statement from where the method should go backwards
      * @param lastNConsideredStatements The number of statements the method should go backwards
-     * @return  A list of statements that occured before the statement given by indexOfStatement or.
-     *          If the list doesn't contain enough elements, i.e (indexOfStatement - lastNConsideredStatements < 0),
-     *          then the return value is just a list statements up to the start of the list.
+     * @return A list of statements that occured before the statement given by indexOfStatement or.
+     * If the list doesn't contain enough elements, i.e (indexOfStatement - lastNConsideredStatements < 0),
+     * then the return value is just a list statements up to the start of the list.
      */
 
     private List<IStatement> getLastNStatementsBeforeStatement(List<IStatement> statements, int indexOfStatement, int lastNConsideredStatements) {

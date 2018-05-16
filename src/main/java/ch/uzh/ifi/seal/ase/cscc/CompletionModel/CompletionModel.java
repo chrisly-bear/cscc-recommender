@@ -18,6 +18,12 @@ public class CompletionModel {
     public CompletionModel() {
     }
 
+    public static CompletionModel fromDisk(String modelDir) throws IOException {
+        CompletionModel model = new CompletionModel();
+        model.index.initializeFromDisk(modelDir);
+        return model;
+    }
+
     public void train(Context ctx) {
         ISST sst = ctx.getSST();
 
@@ -32,7 +38,7 @@ public class CompletionModel {
     }
 
     private boolean isDirectoryEmpty(Path directory) throws IOException {
-        try(DirectoryStream<Path> dirStream = Files.newDirectoryStream(directory)) {
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(directory)) {
             return !dirStream.iterator().hasNext();
         }
     }
@@ -51,11 +57,5 @@ public class CompletionModel {
         }
 
         index.persistToDisk(modelOutputDir);
-    }
-
-    public static CompletionModel fromDisk(String modelDir) throws IOException {
-        CompletionModel model = new CompletionModel();
-        model.index.initializeFromDisk(modelDir);
-        return model;
     }
 }

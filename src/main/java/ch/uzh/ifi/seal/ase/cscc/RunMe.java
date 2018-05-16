@@ -1,7 +1,5 @@
 package ch.uzh.ifi.seal.ase.cscc;
 
-import ch.uzh.ifi.seal.ase.cscc.index.Indexer;
-
 import java.io.IOException;
 
 public class RunMe {

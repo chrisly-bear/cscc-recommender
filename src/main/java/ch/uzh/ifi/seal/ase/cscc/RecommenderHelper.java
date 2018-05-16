@@ -3,7 +3,6 @@ package ch.uzh.ifi.seal.ase.cscc;
 import cc.kave.commons.model.events.IDEEvent;
 import cc.kave.commons.model.events.completionevents.CompletionEvent;
 import cc.kave.commons.model.events.completionevents.Context;
-import cc.kave.commons.model.events.completionevents.IProposal;
 import cc.kave.commons.model.events.completionevents.TerminationState;
 import cc.kave.commons.model.naming.codeelements.IMethodName;
 import cc.kave.commons.model.ssts.ISST;
@@ -20,8 +19,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RecommenderHelper {
     private static final boolean PRINT_PROGRESS = false;
