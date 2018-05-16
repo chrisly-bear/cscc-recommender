@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.visitors;
 
+import cc.kave.commons.model.naming.types.ITypeName;
 import cc.kave.commons.model.ssts.IStatement;
 import cc.kave.commons.model.ssts.expressions.IAssignableExpression;
 import cc.kave.commons.model.ssts.expressions.assignable.IInvocationExpression;
@@ -9,6 +10,7 @@ import cc.kave.commons.model.ssts.statements.IExpressionStatement;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 
 /**
@@ -33,7 +35,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                     String methodCall = ((IInvocationExpression) expression).getMethodName().getName();
 
                     // We can also retrieve the name of the type on which the method was invocated like this:
-                    String type = findTypeOfVariableOnWhichMethodWasInvocated(body, ((IInvocationExpression) expression).getReference().getIdentifier());
+                    String type = findTypeOfVariableOnWhichMethodWasInvoked(body, ((IInvocationExpression) expression).getReference().getIdentifier());
 
                     // Now we get the last n statements before our method invocation
                     List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
@@ -68,18 +70,13 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
         return null;
     }
 
-    private String findTypeOfVariableOnWhichMethodWasInvocated(List<IStatement> statements, String identifier) {
-        String result = "";
-        for (IStatement iStatement : statements) {
-            if (iStatement instanceof VariableDeclaration) {
-                String identifierOfThisDeclaration = ((VariableDeclaration) iStatement).getReference().getIdentifier();
-                if (identifier.equals(identifierOfThisDeclaration)) {
-                    String type = ((VariableDeclaration) iStatement).getType().getName();
-                    result = type;
-                }
-            }
-        }
-        return result;
+    private String findTypeOfVariableOnWhichMethodWasInvoked(List<IStatement> statements, String identifier) {
+
+        VariableTypeFindingVisitor variableTypeFindingVisitor = new VariableTypeFindingVisitor(identifier);
+        String typeName = "";
+        statements.forEach(iStatement -> iStatement.accept(variableTypeFindingVisitor, typeName));
+
+        return typeName;
     }
 
     /**
