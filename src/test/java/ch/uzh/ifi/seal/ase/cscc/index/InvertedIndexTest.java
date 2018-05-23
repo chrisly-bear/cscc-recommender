@@ -16,6 +16,8 @@ public class InvertedIndexTest {
     private List<IndexDocument> docsToIndex = new LinkedList<>();
     private String persistenceLocation = "/tmp/";
     private InvertedIndex index;
+    private InMemoryInvertedIndex luceneIndexInMemory;
+    private DiskBasedInvertedIndex luceneIndexDiskBased;
 
     private IndexDocument receiverObj1 = new IndexDocument(null, "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
             "toLowerCase", "context"
@@ -36,7 +38,7 @@ public class InvertedIndexTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
 
         // create test docs
         docsToIndex.add(new IndexDocument("methodCall", "java.util.List", new LinkedList<>(), Arrays.asList(
@@ -57,8 +59,12 @@ public class InvertedIndexTest {
 
         // create inverted index
         index = new InvertedIndex();
+        luceneIndexInMemory = new InMemoryInvertedIndex();
+        luceneIndexDiskBased = new DiskBasedInvertedIndex(persistenceLocation);
         for (IndexDocument doc : docsToIndex) {
             index.indexDocument(doc);
+            luceneIndexInMemory.indexDocument(doc);
+            luceneIndexDiskBased.indexDocument(doc);
         }
     }
 
@@ -67,6 +73,22 @@ public class InvertedIndexTest {
         Set<IndexDocument> answers = index.search(receiverObj1);
 //        System.out.println("Answers: ");
 //        printAnswers(answers);
+        makeAssertions(answers);
+    }
+
+    @Test
+    public void searchLuceneInMemory() throws IOException {
+        Set<IndexDocument> answers = luceneIndexInMemory.search(receiverObj1);
+        makeAssertions(answers);
+    }
+
+    @Test
+    public void searchLuceneDiskBased() throws IOException {
+        Set<IndexDocument> answers = luceneIndexDiskBased.search(receiverObj1);
+        makeAssertions(answers);
+    }
+
+    private void makeAssertions(Set<IndexDocument> answers) {
         assertEquals(3, answers.size());
         Set<String> methodNames = getMethodNames(answers);
         assertTrue(methodNames.contains("explode"));

@@ -1,71 +1,29 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.*;
-import org.apache.lucene.search.*;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
 
 import java.io.*;
 import java.util.*;
 
+/**
+ * Deprecated: Use InMemoryInvertedIndex or DiskBasedInvertedIndex which are based on Lucene.
+ * This is the original implementation of our own Inverted Index design.
+ */
+@Deprecated
 public class InvertedIndex {
 
     private static final String INDEX_ROOT_DIR_NAME = "CSCCInvertedIndex";
     private static final String SERIALIZED_INDEX_DOCUMENTS_DIR_NAME = "IndexDocuments";
     private static final String INVERTED_INDEX_STRUCTURES_DIR_NAME = "InvertedIndexStructures";
-    private static final String DOC_ID_FIELD = "docID";
-    private static final String OVERALL_CONTEXT_FIELD = "overallContext";
 
     // INDEX 1
     // Type - Inverted Index Structure
     private Map<String, InvertedIndexStructure> typeIndex = new HashMap<>();
 
-    // <type, Lucene RAM directory>
-    private Map<String, RAMDirectory> ramDirectories = null;
-    // <docID, IndexDocument>
-    private Map<String, IndexDocument> docsInRAMIndex = null;
-
-    // directory where the Lucene index is persisted on disk
-    private String indexFileSystemLocation = null;
-
     /**
-     * In-memory index.
-     * Initializing the inverted index without file system directory will make the inverted index work entirely in
-     * memory. You can still persist this index after it has been created, but the index creation happens entirely
-     * in memory (which can be a problem with large data sets). Initialize with a file system directory to store the
-     * index on disk as it is being created.
-     */
-    public InvertedIndex() {
-        ramDirectories = new HashMap<>();
-        docsInRAMIndex = new HashMap<>();
-    }
-
-    /**
-     * Disk index.
-     * Initializing the inverted index with a file system directory will make the index be stored on disk immediately
-     * after indexing each document. This is expected to be much slower than the in-memory index, but useful for large
-     * data sets.
-     * @param indexDir file system directory where the index will be stored
-     */
-    public InvertedIndex(String indexDir) {
-        indexFileSystemLocation = indexDir + "/" + INDEX_ROOT_DIR_NAME;
-    }
-
-    private boolean isInMemoryIndex() {
-        return indexFileSystemLocation == null;
-    }
-
-    /**
-     * Deprecated: use the `indexDocumentLucene` method instead
      * Indexes doc in the two-level inverted index.
      * @param doc document which to put in index
      */
-    @Deprecated
     public void indexDocument(IndexDocument doc) {
         String docType = doc.getType();
         InvertedIndexStructure invertedIndexStructure = typeIndex.get(docType);
@@ -77,93 +35,11 @@ public class InvertedIndex {
     }
 
     /**
-     * Uses Apache Lucene indexes instead of InvertedIndexStructure indexes.
-     * @param doc document to store in index
-     * @throws IOException if the index can't be written to disk
-     */
-    public void indexDocumentLucene(IndexDocument doc) throws IOException {
-        if (isInMemoryIndex()) {
-            // if in-memory index -> keep the IndexDocument object in a map
-            docsInRAMIndex.put(doc.getId(), doc);
-        } else {
-            // if disk index -> serialize object and store it on disk
-            String contextsDirPath = indexFileSystemLocation + "/" + SERIALIZED_INDEX_DOCUMENTS_DIR_NAME;
-            createDirectoryIfNotExists(new File(contextsDirPath));
-            serializeIndexDocument(contextsDirPath, doc);
-        }
-        Directory indexDirectory = getIndexDirectory(doc);
-        IndexWriterConfig config = new IndexWriterConfig();
-        // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
-        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-
-        IndexWriter w = new IndexWriter(indexDirectory, config);
-        addDocToLuceneIndex(w, doc);
-        w.close();
-    }
-
-    /**
-     * Returns either the RAM directory (if index is in-memory index) or the FSDirectory (if index is disk index).
-     * @param doc
-     * @return
-     * @throws IOException
-     */
-    private Directory getIndexDirectory(IndexDocument doc) throws IOException {
-        Directory result = null;
-        String docType = doc.getType();
-        if (indexFileSystemLocation != null) {
-            String luceneIndexDirPath = indexFileSystemLocation + "/InvertedIndexStructures_Lucene/" + docType;
-            FSDirectory fileDirectory = FSDirectory.open(new File(luceneIndexDirPath).toPath());
-            result = fileDirectory;
-        } else if (ramDirectories != null) {
-            RAMDirectory ramDirForGivenType = ramDirectories.get(docType);
-            if (ramDirForGivenType == null) {
-                // RAMDirectory for this type does not exist yet
-                ramDirForGivenType = new RAMDirectory();
-                ramDirectories.put(docType, ramDirForGivenType);
-            }
-            result = ramDirForGivenType;
-        }
-        return result;
-    }
-
-    /**
-     * Stores docID and the overall context in the Lucene index. The overall context will be what we search for at
-     * retrieval time, the docID will be the result of the retrieval.
-     * @param w
-     * @param doc
-     * @throws IOException
-     */
-    private void addDocToLuceneIndex(IndexWriter w, IndexDocument doc) throws IOException {
-        Document luceneDoc = new Document();
-        luceneDoc.add(new StringField(DOC_ID_FIELD, doc.getId(), Field.Store.YES));
-        // store all terms in the overall context as tokens in the index
-        // StringField: no tokenization
-        // TextField: tokenization
-        for (String term : doc.getOverallContext()) {
-            luceneDoc.add(new StringField(OVERALL_CONTEXT_FIELD, term, Field.Store.YES));
-        }
-        w.addDocument(luceneDoc);
-    }
-
-    private static boolean luceneIndexExistsAndIsReadable(Directory indexDir) {
-        boolean existsAndIsReadable = false;
-        try {
-            IndexReader reader = DirectoryReader.open(indexDir);
-            existsAndIsReadable = true;
-        } catch (IOException e) {
-            // e.printStackTrace();
-        }
-        return existsAndIsReadable;
-    }
-
-    /**
-     * Deprecated: use the `searchLucene` method instead
      * Searches for all documents which map doc's type and contain similar terms in the overall context as doc.
      * The query equals a boolean OR query of all terms in the overall context of doc.
      * @param doc document for which to find similar documents
      * @return documents which are similar to doc, i.e. documents whose overall context has at least one term in common with doc's overall context
      */
-    @Deprecated
     public Set<IndexDocument> search(IndexDocument doc) {
         Set<IndexDocument> answers = new HashSet<>();
         String docType = doc.getType();
@@ -175,54 +51,10 @@ public class InvertedIndex {
     }
 
     /**
-     * Searches the Lucene index for documents which match doc's type and which contain similar terms in the overall
-     * context as doc.
-     * The query equals a boolean OR query of all terms in the overall context of doc.
-     * @param doc document for which to find similar documents
-     * @return documents which are similar to doc, i.e. documents whose overall context has at least one term in
-     * common with doc's overall context
-     * @throws IOException
-     */
-    public Set<IndexDocument> searchLucene(IndexDocument doc) throws IOException {
-        Set<IndexDocument> answers = new HashSet<>();
-        String docType = doc.getType();
-        Directory indexDirectory = getIndexDirectory(doc);
-        IndexReader reader = DirectoryReader.open(indexDirectory);
-        IndexSearcher searcher = new IndexSearcher(reader);
-
-        BooleanQuery.Builder boolQueryBuilder = new BooleanQuery.Builder();
-        for (String termStr : doc.getOverallContext()) {
-            Term term = new Term(OVERALL_CONTEXT_FIELD, termStr);
-            Query query = new TermQuery(term);
-            boolQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
-        }
-        Query boolQuery = boolQueryBuilder.build();
-        TopDocs docs = searcher.search(boolQuery, Integer.MAX_VALUE); // TODO: not sure if Integer.MAX_VALUE is such a good idea. There is probably a reason why Lucene does not offer to retrieve all matches at once.
-        ScoreDoc[] hits = docs.scoreDocs;
-        for (ScoreDoc hit : hits) {
-            int luceneDocID = hit.doc;
-            Document luceneDoc = searcher.doc(luceneDocID);
-            String docID = luceneDoc.get(DOC_ID_FIELD);
-            System.out.println(docID);
-            // deserialize IndexDocument object with the given docID
-            if (isInMemoryIndex()) {
-                IndexDocument matchingDoc = docsInRAMIndex.get(docID);
-                answers.add(matchingDoc);
-            } else {
-                IndexDocument matchingDoc = deserializeIndexDocument(this.indexFileSystemLocation + "/" + "IndexDocuments/" + docID + ".ser");
-                answers.add(matchingDoc);
-            }
-        }
-        return answers;
-    }
-
-    /**
-     * Deprecated: use the `persistToDiskLucene` method instead
      * Warning: If {@code targetDir} already contains a persisted inverted index, that
      * inverted index will be overwritten.
      * @param targetDir directory in which to store the inverted index
      */
-    @Deprecated
     public void persistToDisk(String targetDir) {
 
         // create top level directory
@@ -246,23 +78,6 @@ public class InvertedIndex {
             storeContexts(contextsDirPath, invertedIndexStructure.getIndexedDocs());
             // store inverted index structure (InvertedIndexStructure objects) to disk
             storeInvertedIndexStructure(invertedIndexStructuresDir, invertedIndexStructure);
-        }
-    }
-
-    public void persistToDiskLucene(String targetDir) {
-        if (isInMemoryIndex()) {
-            // TODO: persist Lucene in-memory index to disk
-        }
-    }
-
-    private void createDirectoryIfNotExists(File dir) {
-        if (!dir.exists()) {
-            System.out.println("'" + dir + "' does not exist yet. Creating it... ");
-            try {
-                FileUtils.forceMkdir(dir);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -374,7 +189,6 @@ public class InvertedIndex {
             this.typeIndex.put(type, iis);
         }
     }
-
 
     // INDEX 2
     // Context Terms - Contexts
@@ -497,5 +311,6 @@ public class InvertedIndex {
         }
 
     }
+
 
 }
