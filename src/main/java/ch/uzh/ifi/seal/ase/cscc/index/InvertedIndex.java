@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Deprecated: Use InMemoryInvertedIndex or DiskBasedInvertedIndex which are based on Lucene.
@@ -101,6 +102,10 @@ public class InvertedIndex {
     private void serializeIndexDocument(String contextsDirPath, IndexDocument doc) {
         try {
             String contextPath = contextsDirPath + "/" + doc.getId() + ".ser";
+            if (new File(contextPath).exists()) {
+                Logger logger = Logger.getLogger(InvertedIndex.class.getName());
+                logger.warning("Collision during serialization of IndexDocument: Doc with ID '" + doc.getId() + "' already exists!");
+            }
             FileOutputStream fileOut = new FileOutputStream(contextPath);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(doc);
@@ -108,7 +113,7 @@ public class InvertedIndex {
             fileOut.close();
 //                System.out.println("Serialized data is saved in " + contextPath);
         } catch (IOException e) {
-            // ignore for now
+            e.printStackTrace();
             // TODO investigate question marks as method names
         }
     }
@@ -128,7 +133,7 @@ public class InvertedIndex {
                 }
                 invertedIndexStructureWriter.close();
             } catch (IOException e) {
-                // ignore for now
+                e.printStackTrace();
                 // TODO investigate question marks as method names
             }
         }
