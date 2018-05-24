@@ -31,3 +31,4 @@ target/
 hs_err_pid*
 Data/Contexts
 Data/Events
+Data/Model
