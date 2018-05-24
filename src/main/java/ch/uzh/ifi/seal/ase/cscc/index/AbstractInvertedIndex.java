@@ -57,7 +57,8 @@ public abstract class AbstractInvertedIndex {
         for (String term : doc.getOverallContext()) {
             luceneDoc.add(new StringField(OVERALL_CONTEXT_FIELD, term, Field.Store.YES));
         }
-        w.addDocument(luceneDoc);
+//        w.addDocument(luceneDoc); // this will add duplicates to an existing index
+        w.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
     }
 
     /**

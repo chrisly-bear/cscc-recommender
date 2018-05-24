@@ -2,12 +2,12 @@ package ch.uzh.ifi.seal.ase.cscc.index;
 
 import com.github.tomtung.jsimhash.SimHashBuilder;
 import com.github.tomtung.jsimhash.Util;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.commons.text.similarity.LongestCommonSubsequence;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.UUID;
 
 public class IndexDocument implements Serializable {
 
@@ -22,7 +22,15 @@ public class IndexDocument implements Serializable {
     private long overallContextSimhash;
 
     public IndexDocument(String methodCall, String type, List<String> lineContext, List<String> overallContext) {
-        this.id = UUID.randomUUID().toString();
+        // We create a unique, deterministic identifier by combining type, method call, and overall context.
+        // The id should be deterministic so that when we run the indexing several times, we don't add duplicates
+        // to our index. We use SHA256 hashing to limit the length of the id to 64 characters. This is important
+        // because we use the id as a file name when serializing the IndexDocument to disk and want to avoid file
+        // names that are too long for the operating system to handle. SHA256 hashing should not cause any colli-
+        // sions (at least not before the universe comes to an end).
+        String uniqueDeterministicId = type + "_" + (methodCall == null ? "-" : methodCall) + "_" + concatenate(overallContext);
+        this.id = DigestUtils.sha256Hex(uniqueDeterministicId);
+
         this.methodCall = methodCall;
         this.type = type;
         this.lineContext = lineContext;
