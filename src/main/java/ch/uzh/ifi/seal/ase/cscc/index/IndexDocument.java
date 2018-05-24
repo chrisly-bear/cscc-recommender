@@ -22,6 +22,9 @@ public class IndexDocument implements Serializable {
     private long overallContextSimhash;
 
     public IndexDocument(String methodCall, String type, List<String> lineContext, List<String> overallContext) {
+        if (type == null || type.equals("")) {
+            throw new IllegalArgumentException("Parameter 'type' of IndexDocument must not be null or empty!");
+        }
         // We create a unique, deterministic identifier by combining type, method call, and overall context.
         // The id should be deterministic so that when we run the indexing several times, we don't add duplicates
         // to our index. We use SHA256 hashing to limit the length of the id to 64 characters. This is important
