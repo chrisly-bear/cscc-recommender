@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.ase.cscc.CompletionModel;
 
 import cc.kave.commons.model.events.completionevents.Context;
 import cc.kave.commons.model.ssts.ISST;
+import cc.kave.commons.model.ssts.visitor.ISSTNodeVisitor;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.index.InvertedIndex;
 import ch.uzh.ifi.seal.ase.cscc.index.Recommender;
@@ -18,7 +19,7 @@ public class CompletionModel {
     public CompletionModel() {
     }
 
-    public static CompletionModel fromDisk(String modelDir) throws IOException {
+    public static CompletionModel fromDisk(String modelDir) {
         CompletionModel model = new CompletionModel();
         model.index.initializeFromDisk(modelDir);
         return model;
@@ -27,7 +28,7 @@ public class CompletionModel {
     public void train(Context ctx) {
         ISST sst = ctx.getSST();
 
-        IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
+        ISSTNodeVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
         List<IndexDocument> indexDocuments = new LinkedList<>();
 
         sst.accept(indexDocumentExtractionVisitor, indexDocuments);
@@ -47,15 +48,7 @@ public class CompletionModel {
         return new Recommender(index, document);
     }
 
-    public void store(String modelOutputDir) throws IOException {
-        Path path = Paths.get(modelOutputDir);
-
-        try {
-            if (!isDirectoryEmpty(path)) throw new IOException("provided non-empty directory");
-        } catch (NoSuchFileException e) {
-            Files.createDirectory(path);
-        }
-
+    public void store(String modelOutputDir) {
         index.persistToDisk(modelOutputDir);
     }
 }

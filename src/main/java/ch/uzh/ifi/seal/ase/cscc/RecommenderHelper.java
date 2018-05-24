@@ -13,9 +13,10 @@ import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEval;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
+import ch.uzh.ifi.seal.ase.cscc.visitors.InvocationExpressionVisitor;
+import org.apache.commons.lang.mutable.MutableInt;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class RecommenderHelper {
      * Perform 10-fold cross-validation on the Contexts data set.
      * Test results are printed to the console.
      */
-    public void performTenFoldCrossValidation() throws IOException {
+    public void performTenFoldCrossValidation() {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipsTotal = getNumZips(zips);
 
@@ -60,7 +61,7 @@ public class RecommenderHelper {
      *
      * @param modelOutputDir an empty directory where to store the learned model
      */
-    public void learnModel(String modelOutputDir) throws IOException {
+    public void learnModel(String modelOutputDir) {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
@@ -96,7 +97,7 @@ public class RecommenderHelper {
      *
      * @param modelDir directory of the learned model
      */
-    public void evaluateModel(String modelDir) throws IOException {
+    public void evaluateModel(String modelDir) {
         List<String> zips = IoHelper.findAllZips(eventsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
@@ -152,6 +153,39 @@ public class RecommenderHelper {
         }
 
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
+    }
+
+    /**
+     * Helper method which prints out SSTs to console. Can be useful to get an idea of how the SSTs are structured.
+     * It also prints the InvocationExpressions (= method calls), which is what we're interested in.
+     */
+    public void printSSTsAndInvocationExpressions() {
+        MutableInt invocationExpressionCount = new MutableInt(0);
+        List<String> zips = IoHelper.findAllZips(contextsDir);
+        int zipsTotal = getNumZips(zips);
+        int zipCount = 0;
+        for (String zip : zips) {
+            int ctxCount = 0;
+            System.out.println("Processing " + zip);
+//            try {
+                IReadingArchive ra = new ReadingArchive(new File(zip));
+                while (ra.hasNext()) {
+                    Context ctx = ra.getNext(Context.class);
+                    // print SST
+                    ISST sst = ctx.getSST();
+                    System.out.println("================\nSST " + zipCount + "-" + ctxCount + ":\n================\n" + sst.toString());
+                    // print invocation expressions found by visitor
+                    System.out.println("================\nINVOCATION EXPRESSIONS " + zipCount + "-" + ctxCount + ":\n================\n");
+                    sst.accept(new InvocationExpressionVisitor(), invocationExpressionCount);
+                    ctxCount++;
+                }
+                ra.close();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+            if (zipCount++ >= zipsTotal) break;
+        }
+        System.out.println("Total #InvocationExpressions: " + invocationExpressionCount);
     }
 
     private int getNumZips(List<String> zips) {

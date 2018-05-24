@@ -1,9 +1,11 @@
 package ch.uzh.ifi.seal.ase.cscc.visitors;
 
+import cc.kave.commons.model.naming.codeelements.IMethodName;
 import cc.kave.commons.model.ssts.IStatement;
 import cc.kave.commons.model.ssts.expressions.IAssignableExpression;
 import cc.kave.commons.model.ssts.expressions.assignable.IInvocationExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
+import cc.kave.commons.model.ssts.statements.IAssignment;
 import cc.kave.commons.model.ssts.statements.IExpressionStatement;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 
@@ -15,65 +17,70 @@ import java.util.*;
  */
 public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisitor<List<IndexDocument>, Void> {
 
-    private final int LAST_N_CONSIDERED_STATEMENTS = 6;
-
-    private final ContextVisitor contextVisitor = new ContextVisitor();
+    private static final int LAST_N_CONSIDERED_STATEMENTS = 6;
+    private final ContextVisitor CONTEXT_VISITOR = new ContextVisitor();
 
     @Override
     protected List<Void> visit(List<IStatement> body, List<IndexDocument> indexDocuments) {
-
         for (IStatement statement : body) {
-            if (statement instanceof IExpressionStatement) {
-                IAssignableExpression expression = ((IExpressionStatement) statement).getExpression();
+            if (statement instanceof IExpressionStatement || statement instanceof IAssignment) {
+                IAssignableExpression expression;
+                if (statement instanceof IExpressionStatement) {
+                    expression = ((IExpressionStatement) statement).getExpression();
+                } else { // (statement instanceof IAssignment)
+                    expression = ((IAssignment) statement).getExpression();
+                }
                 if (expression instanceof IInvocationExpression) {
-                    // We have detected a method invocation
 
-                    // We can retrieve the simple name (not the full name) of the invocated method like this:
-                    String methodCall = ((IInvocationExpression) expression).getMethodName().getName();
+                    final IMethodName methodName = ((IInvocationExpression) expression).getMethodName();
+                    final String methodNameStr = methodName.getName();
+                    String type = methodName.getDeclaringType().getFullName();
+                    type = normalizeType(type);
 
-                    // We can also retrieve the name of the type on which the method was invocated like this:
-                    String type = findTypeOfVariableOnWhichMethodWasInvoked(body, ((IInvocationExpression) expression).getReference().getIdentifier());
+                    // we don't want to index method names we don't know, nor constructor methods
+                    if (!methodNameStr.equals("???") || !methodNameStr.equals("???")) {
+                        if (!methodName.isConstructor()) {
 
-                    // Now we get the last n statements before our method invocation
-                    List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
+                            // create line and overall context
+                            List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
+                            Set<String> overallContextSet = new HashSet<>();
+                            Set<String> lineContextSet = new HashSet<>();
+                            lastNStatements.forEach(iStatement -> iStatement.accept(CONTEXT_VISITOR, overallContextSet));
+                            statement.accept(CONTEXT_VISITOR, lineContextSet);
 
-                    Set<String> overallContext = new HashSet<>();
-                    Set<String> lineContext = new HashSet<>();
+                            // TODO: why do we have to remove it if line context is the same as method call?
+                            if (lineContextSet.contains(methodNameStr)) {
+                                //System.out.println("Line context would be the same as the name of the method, make line context empty");
+                                lineContextSet.remove(methodNameStr);
+                            }
 
-                    lastNStatements.forEach(iStatement -> iStatement.accept(contextVisitor, overallContext));
-
-                    statement.accept(contextVisitor, lineContext);
-
-                    if (lineContext.contains(methodCall)) {
-                        //System.out.println("Line context would be the same as the name of the method, make line context empty");
-                        lineContext.remove(methodCall);
+                            // create a new IndexDocument
+                            List<String> lineContext = new LinkedList<>();
+                            lineContext.addAll(lineContextSet);
+                            List<String> overallContext = new LinkedList<>();
+                            overallContext.addAll(overallContextSet);
+                            IndexDocument indexDocument = new IndexDocument(methodNameStr, type, lineContext, overallContext);
+                            indexDocuments.add(indexDocument);
+                        }
                     }
-
-                    List<String> overallContextList = new ArrayList<>();
-                    overallContextList.addAll(overallContext);
-
-                    List<String> lineContextList = new ArrayList<>();
-                    lineContextList.addAll(lineContext);
-
-                    IndexDocument indexDocument = new IndexDocument(methodCall, type, lineContextList, overallContextList);
-
-                    // TODO Get Java keywords?
-
-                    indexDocuments.add(indexDocument);
                 }
             }
         }
-
-        return null;
+        // call to parent, important so that bodies within body are also traversed
+        // without this, not all InvocationExpressions are traversed
+        return super.visit(body, indexDocuments);
     }
 
-    private String findTypeOfVariableOnWhichMethodWasInvoked(List<IStatement> statements, String identifier) {
-
-        VariableTypeFindingVisitor variableTypeFindingVisitor = new VariableTypeFindingVisitor(identifier);
-        String typeName = "";
-        statements.forEach(iStatement -> iStatement.accept(variableTypeFindingVisitor, typeName));
-
-        return typeName;
+    /**
+     * Removes the generic part of generic parts, which contains a lot of special symbols.
+     * E.g. "System.Collections.Generic.List`1[[T -> MailChimp.Lists.Grouping, MailChimp]]"
+     * becomes "System.Collections.Generic.List".
+     * This has the side effect that we index types which differ in their generics as the same type.
+     * @param type type string to normalize
+     * @return normalized type string
+     */
+    private String normalizeType(String type) {
+        return type.split("`")[0];
     }
 
     /**
@@ -84,7 +91,6 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
      * If the list doesn't contain enough elements, i.e (indexOfStatement - lastNConsideredStatements < 0),
      * then the return value is just a list statements up to the start of the list.
      */
-
     private List<IStatement> getLastNStatementsBeforeStatement(List<IStatement> statements, int indexOfStatement, int lastNConsideredStatements) {
 
         if (indexOfStatement - lastNConsideredStatements < 0) {
