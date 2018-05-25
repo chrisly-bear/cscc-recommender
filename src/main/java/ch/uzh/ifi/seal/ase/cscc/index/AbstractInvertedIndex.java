@@ -12,6 +12,7 @@ import java.util.*;
 
 public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
+    // fields for indexing in Lucene index
     private static final String DOC_ID_FIELD = "docID";
     private static final String OVERALL_CONTEXT_FIELD = "overallContext";
 

@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
+import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 
 public class InvertedIndexTest {
 
-    private static final String PERSISTENCE_LOCATION = "/tmp/";
     private static final String INVERTED_INDEX_DIR_NAME = "CSCCInvertedIndex";
     private List<IndexDocument> docsToIndex = new LinkedList<>();
     private InvertedIndex index;
@@ -62,7 +62,7 @@ public class InvertedIndexTest {
         // create inverted index
         index = new InvertedIndex();
         luceneIndexInMemory = new InMemoryInvertedIndex();
-        luceneIndexDiskBased = new DiskBasedInvertedIndex(PERSISTENCE_LOCATION);
+        luceneIndexDiskBased = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
         for (IndexDocument doc : docsToIndex) {
             index.indexDocument(doc);
             luceneIndexInMemory.indexDocument(doc);
@@ -73,7 +73,7 @@ public class InvertedIndexTest {
     @AfterClass
     public static void cleanUp() throws IOException {
         System.out.println("All tests are done. Removing index files...");
-        FileUtils.deleteDirectory(new File(PERSISTENCE_LOCATION + "/" + INVERTED_INDEX_DIR_NAME));
+        FileUtils.deleteDirectory(new File(CSCCConfiguration.PERSISTENCE_LOCATION_TEST + "/" + INVERTED_INDEX_DIR_NAME));
     }
 
     @Test
@@ -106,13 +106,13 @@ public class InvertedIndexTest {
 
     @Test
     public void persist() throws IOException {
-        index.persistToDisk(PERSISTENCE_LOCATION);
+        index.persistToDisk(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
     }
 
     @Test
     public void initializeFromDisk() throws IOException {
         InvertedIndex indexFromDisk = new InvertedIndex();
-        indexFromDisk.initializeFromDisk(PERSISTENCE_LOCATION);
+        indexFromDisk.initializeFromDisk(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
 
         Set<IndexDocument> answers = index.search(receiverObj1);
         Set<IndexDocument> answersIndexFromDisk = indexFromDisk.search(receiverObj1);
@@ -122,6 +122,6 @@ public class InvertedIndexTest {
         assertTrue(methodNames.contains("flyAway"));
         assertTrue(methodNames.contains("identify"));
 
-        FileUtils.deleteDirectory(new File(PERSISTENCE_LOCATION + "/" + INVERTED_INDEX_DIR_NAME));
+        FileUtils.deleteDirectory(new File(CSCCConfiguration.PERSISTENCE_LOCATION_TEST + "/" + INVERTED_INDEX_DIR_NAME));
     }
 }

@@ -11,6 +11,7 @@ import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEval;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
+import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 import ch.uzh.ifi.seal.ase.cscc.visitors.InvocationExpressionVisitor;
@@ -22,8 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class RecommenderHelper {
-    private static final boolean PRINT_PROGRESS = false;
-    private static final int LIMIT_ZIPS = 10;
 
     private String contextsDir;
     private String eventsDir;
@@ -70,7 +69,7 @@ public class RecommenderHelper {
 
         for (String zip : zips) {
 
-            if (PRINT_PROGRESS) {
+            if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);
@@ -108,7 +107,7 @@ public class RecommenderHelper {
         for (String zip : zips) {
             double perc = 100 * zipCount / (double) zipTotal;
 
-            if (PRINT_PROGRESS) {
+            if (CSCCConfiguration.PRINT_PROGRESS) {
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);
             }
@@ -185,8 +184,8 @@ public class RecommenderHelper {
     }
 
     private int getNumZips(List<String> zips) {
-        if (LIMIT_ZIPS > 0) {
-            return LIMIT_ZIPS;
+        if (CSCCConfiguration.LIMIT_ZIPS > 0) {
+            return CSCCConfiguration.LIMIT_ZIPS;
         } else {
             return zips.size();
         }
@@ -199,7 +198,7 @@ public class RecommenderHelper {
 
         for (String zip : zips) {
 
-            if (PRINT_PROGRESS) {
+            if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);
@@ -229,7 +228,7 @@ public class RecommenderHelper {
         CompletionModelEval eval = new CompletionModelEval(completionModel);
 
         for (String zip : zips) {
-            if (PRINT_PROGRESS) {
+            if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);

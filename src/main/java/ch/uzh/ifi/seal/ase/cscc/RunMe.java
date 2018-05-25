@@ -1,16 +1,15 @@
 package ch.uzh.ifi.seal.ase.cscc;
 
-public class RunMe {
+import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 
-    private static final String eventsDir = "Data/Events";
-    private static final String contextsDir = "Data/Contexts";
+public class RunMe {
 
     public static void main(String[] args) {
 
-//        new RecommenderHelper(contextsDir, eventsDir).performTenFoldCrossValidation();
-        new RecommenderHelper(contextsDir, eventsDir).learnModel("Data/Model");
-//        new RecommenderHelper(contextsDir, eventsDir).evaluateModel("Data/Model");
-//        new RecommenderHelper(contextsDir, eventsDir).printSSTsAndInvocationExpressions();
+//        new RecommenderHelper(CSCCConfiguration.CONTEXTS_DIR, CSCCConfiguration.EVENTS_DIR).performTenFoldCrossValidation();
+        new RecommenderHelper(CSCCConfiguration.CONTEXTS_DIR, CSCCConfiguration.EVENTS_DIR).learnModel(CSCCConfiguration.PERSISTENCE_LOCATION);
+//        new RecommenderHelper(CSCCConfiguration.CONTEXTS_DIR, CSCCConfiguration.EVENTS_DIR).evaluateModel(CSCCConfiguration.PERSISTENCE_LOCATION);
+//        new RecommenderHelper(CSCCConfiguration.CONTEXTS_DIR, CSCCConfiguration.EVENTS_DIR).printSSTsAndInvocationExpressions();
     }
 
 }

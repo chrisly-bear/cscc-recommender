@@ -8,6 +8,7 @@ import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.statements.IAssignment;
 import cc.kave.commons.model.ssts.statements.IExpressionStatement;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
+import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 
 import java.util.*;
 
@@ -17,7 +18,6 @@ import java.util.*;
  */
 public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisitor<List<IndexDocument>, Void> {
 
-    private static final int LAST_N_CONSIDERED_STATEMENTS = 6;
     private final ContextVisitor CONTEXT_VISITOR = new ContextVisitor();
 
     @Override
@@ -42,7 +42,7 @@ public class IndexDocumentExtractionVisitor extends AbstractTraversingNodeVisito
                         if (!methodName.isConstructor()) {
 
                             // create line and overall context
-                            List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), LAST_N_CONSIDERED_STATEMENTS);
+                            List<IStatement> lastNStatements = getLastNStatementsBeforeStatement(body, body.indexOf(statement), CSCCConfiguration.LAST_N_CONSIDERED_STATEMENTS);
                             Set<String> overallContextSet = new HashSet<>();
                             Set<String> lineContextSet = new HashSet<>();
                             lastNStatements.forEach(iStatement -> iStatement.accept(CONTEXT_VISITOR, overallContextSet));
