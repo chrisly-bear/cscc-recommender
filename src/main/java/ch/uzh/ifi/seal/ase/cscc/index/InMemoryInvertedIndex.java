@@ -24,6 +24,11 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
     private Map<String, IndexDocument> docsInRAMIndex = new HashMap<>();
 
     @Override
+    boolean isIndexed(IndexDocument doc) {
+        return docsInRAMIndex.containsKey(doc.getId());
+    }
+
+    @Override
     void serializeIndexDocument(IndexDocument doc) {
         // keep the IndexDocument object in a map
         docsInRAMIndex.put(doc.getId(), doc);

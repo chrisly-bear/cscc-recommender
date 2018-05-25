@@ -1,6 +1,8 @@
 package ch.uzh.ifi.seal.ase.cscc.utils;
 
+import ch.uzh.ifi.seal.ase.cscc.index.DiskBasedInvertedIndex;
 import ch.uzh.ifi.seal.ase.cscc.index.IInvertedIndex;
+import ch.uzh.ifi.seal.ase.cscc.index.InMemoryInvertedIndex;
 import ch.uzh.ifi.seal.ase.cscc.index.InvertedIndex;
 
 public class CSCCConfiguration {
@@ -24,6 +26,8 @@ public class CSCCConfiguration {
     // default inverted index implementation to use
     public static IInvertedIndex getNewInvertedIndexInstance() {
         return new InvertedIndex();
+//        return new InMemoryInvertedIndex();
+//        return new DiskBasedInvertedIndex(PERSISTENCE_LOCATION);
     }
 
 }

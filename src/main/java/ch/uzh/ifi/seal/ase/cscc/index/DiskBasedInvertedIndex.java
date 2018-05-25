@@ -5,6 +5,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -22,6 +24,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
 
     // directory where the Lucene index is persisted on disk
     private String indexFileSystemLocation;
+    private Set<String> indexedDocs = new HashSet<>();
 
     /**
      * Constructor
@@ -29,6 +32,11 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
      */
     public DiskBasedInvertedIndex(String indexDir) {
         indexFileSystemLocation = indexDir + "/" + INDEX_ROOT_DIR_NAME;
+    }
+
+    @Override
+    boolean isIndexed(IndexDocument doc) {
+        return this.indexedDocs.contains(doc.getId());
     }
 
     @Override
@@ -43,6 +51,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         out.close();
         fileOut.close();
 //        System.out.println("Serialized data is saved in " + contextPath);
+        this.indexedDocs.add(doc.getId());
     }
 
     private void createDirectoryIfNotExists(File dir) {

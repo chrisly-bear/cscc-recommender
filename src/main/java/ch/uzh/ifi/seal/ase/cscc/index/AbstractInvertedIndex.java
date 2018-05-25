@@ -21,6 +21,10 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @param doc document to store in index
      */
     public void indexDocument(IndexDocument doc) {
+        if (isIndexed(doc)) {
+            // do not put identical documents in index twice
+            return;
+        }
         try {
             serializeIndexDocument(doc);
             Directory indexDirectory = getIndexDirectory(doc);
@@ -35,6 +39,12 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
             System.exit(1); // exit on IOException
         }
     }
+
+    /**
+     * Checks if a document is already in the index.
+     * @param doc
+     */
+    abstract boolean isIndexed(IndexDocument doc);
 
     abstract void serializeIndexDocument(IndexDocument doc) throws IOException;
 
