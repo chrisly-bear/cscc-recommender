@@ -57,7 +57,7 @@ public class InvertedIndex implements IInvertedIndex {
      * inverted index will be overwritten.
      * @param targetDir directory in which to store the inverted index
      */
-    public void persistToDisk(String targetDir) {
+    public void persistToDisk(String targetDir) throws IOException {
 
         // create top level directory
         String invertedIndexDirPath = targetDir + "/" + INDEX_ROOT_DIR_NAME;
@@ -83,63 +83,49 @@ public class InvertedIndex implements IInvertedIndex {
         }
     }
 
-    private void deleteDirectoryIfExists(File dir) {
+    private void deleteDirectoryIfExists(File dir) throws IOException {
         if (dir.exists()) {
             System.out.println("'" + dir + "' directory already exists. Deleting it... ");
-            try {
-                FileUtils.deleteDirectory(dir);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            FileUtils.deleteDirectory(dir);
         }
     }
 
-    private void storeContexts(String contextsDirPath, Set<IndexDocument> contexts) {
+    private void storeContexts(String contextsDirPath, Set<IndexDocument> contexts) throws IOException {
         for (IndexDocument doc : contexts) {
             serializeIndexDocument(contextsDirPath, doc);
         }
     }
 
-    private void serializeIndexDocument(String contextsDirPath, IndexDocument doc) {
-        try {
-            String contextPath = contextsDirPath + "/" + doc.getId() + ".ser";
-            if (new File(contextPath).exists()) {
-                LOGGER.info("Collision during serialization of IndexDocument: Doc with ID '" + doc.getId() + "' already exists!");
-            }
-            FileOutputStream fileOut = new FileOutputStream(contextPath);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(doc);
-            out.close();
-            fileOut.close();
-//                System.out.println("Serialized data is saved in " + contextPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO investigate question marks as method names
+    private void serializeIndexDocument(String contextsDirPath, IndexDocument doc) throws IOException {
+        String contextPath = contextsDirPath + "/" + doc.getId() + ".ser";
+        if (new File(contextPath).exists()) {
+            LOGGER.info("Collision during serialization of IndexDocument: Doc with ID '" + doc.getId() + "' already exists!");
         }
+        FileOutputStream fileOut = new FileOutputStream(contextPath);
+        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        out.writeObject(doc);
+        out.close();
+        fileOut.close();
+//        System.out.println("Serialized data is saved in " + contextPath);
     }
 
-    private void storeInvertedIndexStructure(File invertedIndexStructuresDir, InvertedIndexStructure invertedIndexStructure) {
+    private void storeInvertedIndexStructure(File invertedIndexStructuresDir, InvertedIndexStructure invertedIndexStructure) throws IOException {
         String typeDirPath = invertedIndexStructuresDir + "/" + invertedIndexStructure.representedType;
         File typeDir = new File(typeDirPath);
         typeDir.mkdir();
         for (String methodName : invertedIndexStructure.index.keySet()) {
-            try {
-                String postingsListPath = typeDirPath + "/" + methodName;
-                BufferedWriter invertedIndexStructureWriter = new BufferedWriter(new FileWriter(postingsListPath));
+            String postingsListPath = typeDirPath + "/" + methodName;
+            BufferedWriter invertedIndexStructureWriter = new BufferedWriter(new FileWriter(postingsListPath));
 
-                for (IndexDocument posting : invertedIndexStructure.index.get(methodName)) {
-                    invertedIndexStructureWriter.write(posting.getId());
-                    invertedIndexStructureWriter.newLine();
-                }
-                invertedIndexStructureWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                // TODO investigate question marks as method names
+            for (IndexDocument posting : invertedIndexStructure.index.get(methodName)) {
+                invertedIndexStructureWriter.write(posting.getId());
+                invertedIndexStructureWriter.newLine();
             }
+            invertedIndexStructureWriter.close();
         }
     }
 
-    public void initializeFromDisk(String sourceDir) {
+    public void initializeFromDisk(String sourceDir) throws IOException {
         // initialize contexts
         String contextsDirPath = sourceDir + "/" + INDEX_ROOT_DIR_NAME + "/" + SERIALIZED_INDEX_DOCUMENTS_DIR_NAME;
         Map<String, IndexDocument> docIdIndexDocumentMap = initializeContexts(contextsDirPath);
@@ -152,7 +138,7 @@ public class InvertedIndex implements IInvertedIndex {
      * @param pathToContexts Folder in which the contexts (serialized IndexDocument objects) are stored
      * @return Map where key is the document ID and value is the IndexDocument object
      */
-    private Map<String, IndexDocument> initializeContexts(String pathToContexts) {
+    private Map<String, IndexDocument> initializeContexts(String pathToContexts) throws IOException {
         Map<String, IndexDocument> docIdIndexDocumentMap = new HashMap<>();
         File contextsDir = new File(pathToContexts);
         FilenameFilter filenameFilter = (dir, name) -> name.endsWith(".ser");
@@ -163,17 +149,18 @@ public class InvertedIndex implements IInvertedIndex {
         return docIdIndexDocumentMap;
     }
 
-    private IndexDocument deserializeIndexDocument(String pathToFile) {
+    private IndexDocument deserializeIndexDocument(String pathToFile) throws IOException {
         IndexDocument doc = null;
+        FileInputStream fileIn = new FileInputStream(pathToFile);
+        ObjectInputStream in = new ObjectInputStream(fileIn);
         try {
-            FileInputStream fileIn = new FileInputStream(pathToFile);
-            ObjectInputStream in = new ObjectInputStream(fileIn);
             doc = (IndexDocument) in.readObject();
-            in.close();
-            fileIn.close();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            System.exit(1); // exit on exception
         }
+        in.close();
+        fileIn.close();
         return doc;
     }
 
@@ -183,7 +170,7 @@ public class InvertedIndex implements IInvertedIndex {
      * @param docIdIndexDocumentMap         Maps document IDs with IndexDocument objects.
      * @param pathToInvertedIndexStructures Directory in which the InvertedIndexStructures are stored.
      */
-    private void initializeInvertedIndexStructures(Map<String, IndexDocument> docIdIndexDocumentMap, String pathToInvertedIndexStructures) {
+    private void initializeInvertedIndexStructures(Map<String, IndexDocument> docIdIndexDocumentMap, String pathToInvertedIndexStructures) throws IOException {
         File invertedIndexStructuresDir = new File(pathToInvertedIndexStructures);
         FileFilter directoryFilter = file -> file.isDirectory();
         for (File typeDir : invertedIndexStructuresDir.listFiles(directoryFilter)) {
@@ -270,7 +257,7 @@ public class InvertedIndex implements IInvertedIndex {
          *                                   term.
          * @param idIndexDocumentMap         Maps document IDs to IndexDocument objects.
          */
-        private void initializeFromDisk(File dirContainingPostingsLists, Map<String, IndexDocument> idIndexDocumentMap) {
+        private void initializeFromDisk(File dirContainingPostingsLists, Map<String, IndexDocument> idIndexDocumentMap) throws IOException {
             if (!dirContainingPostingsLists.isDirectory()) {
                 return;
             }
@@ -288,21 +275,15 @@ public class InvertedIndex implements IInvertedIndex {
             }
         }
 
-        private List<String> getDocIDsFromPostingsFile(File postingsFile) {
+        private List<String> getDocIDsFromPostingsFile(File postingsFile) throws IOException {
             List<String> docIDs = new LinkedList<>();
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(postingsFile));
-                String id;
-                while ((id = reader.readLine()) != null) {
-                    docIDs.add(id);
+            BufferedReader reader = new BufferedReader(new FileReader(postingsFile));
+            String id;
+            while ((id = reader.readLine()) != null) {
+                docIDs.add(id);
 //                    System.out.println("      " + id);
-                }
-                reader.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+            reader.close();
             return docIDs;
         }
 

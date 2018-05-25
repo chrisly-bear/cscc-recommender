@@ -21,7 +21,12 @@ public class CompletionModel {
 
     public static CompletionModel fromDisk(String modelDir) {
         CompletionModel model = new CompletionModel();
-        model.index.initializeFromDisk(modelDir);
+        try {
+            model.index.initializeFromDisk(modelDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1); // exit on IOException
+        }
         return model;
     }
 
@@ -49,6 +54,11 @@ public class CompletionModel {
     }
 
     public void store(String modelOutputDir) {
-        index.persistToDisk(modelOutputDir);
+        try {
+            index.persistToDisk(modelOutputDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1); // exit on IOException
+        }
     }
 }

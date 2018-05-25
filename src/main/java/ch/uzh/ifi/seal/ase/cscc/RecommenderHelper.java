@@ -167,22 +167,18 @@ public class RecommenderHelper {
         for (String zip : zips) {
             int ctxCount = 0;
             System.out.println("Processing " + zip);
-//            try {
-                IReadingArchive ra = new ReadingArchive(new File(zip));
-                while (ra.hasNext()) {
-                    Context ctx = ra.getNext(Context.class);
-                    // print SST
-                    ISST sst = ctx.getSST();
-                    System.out.println("================\nSST " + zipCount + "-" + ctxCount + ":\n================\n" + sst.toString());
-                    // print invocation expressions found by visitor
-                    System.out.println("================\nINVOCATION EXPRESSIONS " + zipCount + "-" + ctxCount + ":\n================\n");
-                    sst.accept(new InvocationExpressionVisitor(), invocationExpressionCount);
-                    ctxCount++;
-                }
-                ra.close();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+            IReadingArchive ra = new ReadingArchive(new File(zip));
+            while (ra.hasNext()) {
+                Context ctx = ra.getNext(Context.class);
+                // print SST
+                ISST sst = ctx.getSST();
+                System.out.println("================\nSST " + zipCount + "-" + ctxCount + ":\n================\n" + sst.toString());
+                // print invocation expressions found by visitor
+                System.out.println("================\nINVOCATION EXPRESSIONS " + zipCount + "-" + ctxCount + ":\n================\n");
+                sst.accept(new InvocationExpressionVisitor(), invocationExpressionCount);
+                ctxCount++;
+            }
+            ra.close();
             if (zipCount++ >= zipsTotal) break;
         }
         System.out.println("Total #InvocationExpressions: " + invocationExpressionCount);

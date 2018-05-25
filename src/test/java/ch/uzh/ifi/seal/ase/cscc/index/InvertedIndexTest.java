@@ -40,7 +40,7 @@ public class InvertedIndexTest {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
 
         // create test docs
         docsToIndex.add(new IndexDocument("methodCall", "java.util.List", new LinkedList<>(), Arrays.asList(
@@ -105,12 +105,12 @@ public class InvertedIndexTest {
     }
 
     @Test
-    public void persist() {
+    public void persist() throws IOException {
         index.persistToDisk(PERSISTENCE_LOCATION);
     }
 
     @Test
-    public void initializeFromDisk() {
+    public void initializeFromDisk() throws IOException {
         InvertedIndex indexFromDisk = new InvertedIndex();
         indexFromDisk.initializeFromDisk(PERSISTENCE_LOCATION);
 
@@ -122,10 +122,6 @@ public class InvertedIndexTest {
         assertTrue(methodNames.contains("flyAway"));
         assertTrue(methodNames.contains("identify"));
 
-        try {
-            FileUtils.deleteDirectory(new File(PERSISTENCE_LOCATION + "/" + INVERTED_INDEX_DIR_NAME));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileUtils.deleteDirectory(new File(PERSISTENCE_LOCATION + "/" + INVERTED_INDEX_DIR_NAME));
     }
 }

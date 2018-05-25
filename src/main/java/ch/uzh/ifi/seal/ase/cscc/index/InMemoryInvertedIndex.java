@@ -46,12 +46,12 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
         return docsInRAMIndex.get(docID);
     }
 
-    public void persistToDisk(String targetDir) {
+    public void persistToDisk(String targetDir) throws IOException {
         // TODO: persist Lucene in-memory index to disk
         LOGGER.warning("Persistence not implemented!");
     }
 
-    public void initializeFromDisk(String sourceDir) {
+    public void initializeFromDisk(String sourceDir) throws IOException {
         // TODO: implement
         LOGGER.warning("Persistence not implemented!");
     }

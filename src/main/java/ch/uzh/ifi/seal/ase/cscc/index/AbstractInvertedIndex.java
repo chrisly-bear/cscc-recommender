@@ -110,7 +110,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @param docID
      * @return
      */
-    abstract IndexDocument deserializeIndexDocument(String docID);
+    abstract IndexDocument deserializeIndexDocument(String docID) throws IOException;
 
     private static boolean luceneIndexExistsAndIsReadable(Directory indexDir) {
         boolean existsAndIsReadable = false;

@@ -52,6 +52,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
                 FileUtils.forceMkdir(dir);
             } catch (IOException e) {
                 e.printStackTrace();
+                System.exit(1); // exit on IOException
             }
         }
     }
@@ -65,18 +66,19 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     }
 
     @Override
-    IndexDocument deserializeIndexDocument(String docID) {
+    IndexDocument deserializeIndexDocument(String docID) throws IOException {
         String pathToFile = this.indexFileSystemLocation + "/" + SERIALIZED_INDEX_DOCUMENTS_DIR_NAME + "/" + docID + ".ser";
         IndexDocument doc = null;
+        FileInputStream fileIn = new FileInputStream(pathToFile);
+        ObjectInputStream in = new ObjectInputStream(fileIn);
         try {
-            FileInputStream fileIn = new FileInputStream(pathToFile);
-            ObjectInputStream in = new ObjectInputStream(fileIn);
             doc = (IndexDocument) in.readObject();
-            in.close();
-            fileIn.close();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            System.exit(1); // exit on exception
         }
+        in.close();
+        fileIn.close();
         return doc;
     }
 
