@@ -205,6 +205,12 @@ public class InvertedIndex implements IInvertedIndex {
                 // don't index documents which do not match the inverted index structure's type
                 return;
             }
+//            if (indexedDocs.contains(doc)) { // why does this not work???
+            if (isIndexed(doc)) {
+                // don't index identical documents
+//                LOGGER.info("Doc '" + doc.getId() + "' is already in index!");
+                return;
+            }
             for (String term : doc.getOverallContext()) {
                 if (stopwords.contains(term))
                     continue;
@@ -217,6 +223,15 @@ public class InvertedIndex implements IInvertedIndex {
             }
             indexedDocs.add(doc);
 //            System.out.println("indexed " + doc);
+        }
+
+        private boolean isIndexed(IndexDocument doc) {
+            for (IndexDocument d : this.indexedDocs) {
+                if (doc.equals(d)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private Set<IndexDocument> search(IndexDocument doc) {

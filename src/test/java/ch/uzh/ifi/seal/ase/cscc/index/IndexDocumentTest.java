@@ -155,4 +155,9 @@ public class IndexDocumentTest {
     public void identicalDocumentsMustHaveSameID() {
         assertEquals(doc2.getId(), doc2_twin.getId());
     }
+
+    @Test
+    public void identicalDocumentsMustBeEqual() {
+        assertEquals(doc2, doc2_twin);
+    }
 }

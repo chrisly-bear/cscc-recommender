@@ -158,4 +158,15 @@ public class IndexDocument implements Serializable {
                 ", overallContextSimhash=" + overallContextSimhash +
                 '}';
     }
+
+    // equals method required for detecting already indexed documents (to avoid duplicate elements in index)
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof IndexDocument) {
+            IndexDocument other = (IndexDocument) obj;
+            return other.getId().equals(this.getId());
+        }
+        return false;
+    }
+
 }
