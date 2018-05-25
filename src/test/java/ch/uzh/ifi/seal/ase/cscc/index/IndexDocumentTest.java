@@ -13,6 +13,7 @@ public class IndexDocumentTest {
 
     IndexDocument doc1;
     IndexDocument doc2;
+    IndexDocument doc2_twin;
 
     @Before
     public void setUp() {
@@ -43,6 +44,31 @@ public class IndexDocumentTest {
         overallContext2.add("dapibus");
         overallContext2.add("curabitur");
         doc2 = new IndexDocument("testMethod2", "com.something.util.test.TestClass2", lineContext2, overallContext2);
+
+        // same as doc2 but with different order of words in contexts and duplicate words in context
+        List<String> lineContext3 = new LinkedList<>();
+        lineContext3.add("Eve");
+        lineContext3.add("Eve");
+        lineContext3.add("Adam");
+        lineContext3.add("Adam");
+        List<String> overallContext3 = new LinkedList<>();
+        overallContext3.add("curabitur");
+        overallContext3.add("dapibus");
+        overallContext3.add("porta");
+        overallContext3.add("orci");
+        overallContext3.add("id");
+        overallContext3.add("ipsum");
+        overallContext3.add("in");
+        overallContext3.add("Pellentesque");
+        overallContext3.add("Pellentesque");
+        overallContext3.add("in");
+        overallContext3.add("ipsum");
+        overallContext3.add("id");
+        overallContext3.add("orci");
+        overallContext3.add("porta");
+        overallContext3.add("dapibus");
+        overallContext3.add("curabitur");
+        doc2_twin = new IndexDocument("testMethod2", "com.something.util.test.TestClass2", lineContext3, overallContext3);
     }
 
     @Test
@@ -50,7 +76,7 @@ public class IndexDocumentTest {
         long simhash = doc1.getLineContextSimhash();
         String simhashString = Util.simHashToString(simhash);
         System.out.println("LineContextSimhash: " + simhashString);
-        String expectedString = "1111001101000101111011111000101000000010100010010000100111011001";
+        String expectedString = "0110110110001100100011000000011010101110001001110111111010000100";
         assertEquals(expectedString, simhashString);
     }
 
@@ -59,7 +85,7 @@ public class IndexDocumentTest {
         long simhash = doc1.getOverallContextSimhash();
         String simhashString = Util.simHashToString(simhash);
         System.out.println("OverallContextSimhash: " + simhashString);
-        String expectedString = "0101100010011100001111110011000000000111011000101101110101110101";
+        String expectedString = "0011001111101111010011001011101011001101100101111101111011000011";
         assertEquals(expectedString, simhashString);
     }
 
@@ -69,7 +95,7 @@ public class IndexDocumentTest {
         assertEquals(0, doc1.lineContextHammingDistanceToOther(doc1));
         // hamming distance must be symmetric
         assertEquals(doc2.lineContextHammingDistanceToOther(doc1), doc1.lineContextHammingDistanceToOther(doc2));
-        int expected = 29;
+        int expected = 27;
         assertEquals(expected, doc1.lineContextHammingDistanceToOther(doc2));
         assertEquals(expected, doc2.lineContextHammingDistanceToOther(doc1));
     }
@@ -80,7 +106,7 @@ public class IndexDocumentTest {
         assertEquals(0, doc1.overallContextHammingDistanceToOther(doc1));
         // hamming distance must be symmetric
         assertEquals(doc2.overallContextHammingDistanceToOther(doc1), doc1.overallContextHammingDistanceToOther(doc2));
-        int expected = 32;
+        int expected = 20;
         assertEquals(expected, doc1.overallContextHammingDistanceToOther(doc2));
         assertEquals(expected, doc2.overallContextHammingDistanceToOther(doc1));
     }
@@ -104,7 +130,7 @@ public class IndexDocumentTest {
         // LCS must be symmetric
         assertEquals(doc1.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc2), doc2.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc1), delta);
 
-        double expected = 0.425531914893617;
+        double expected = 0.3829787234042553;
         assertEquals(expected, doc1.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc2), delta);
         assertEquals(expected, doc2.normalizedLongestCommonSubsequenceLengthOverallContextToOther(doc1), delta);
     }
@@ -123,5 +149,10 @@ public class IndexDocumentTest {
         double expected = 0.09090909090909094;
         assertEquals(expected, doc1.normalizedLevenshteinDistanceLineContextToOther(doc2), delta);
         assertEquals(expected, doc2.normalizedLevenshteinDistanceLineContextToOther(doc1), delta);
+    }
+
+    @Test
+    public void identicalDocumentsMustHaveSameID() {
+        assertEquals(doc2.getId(), doc2_twin.getId());
     }
 }

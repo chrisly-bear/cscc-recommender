@@ -7,7 +7,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.commons.text.similarity.LongestCommonSubsequence;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.*;
 
 public class IndexDocument implements Serializable {
 
@@ -16,31 +16,35 @@ public class IndexDocument implements Serializable {
     private String id;
     private String methodCall;
     private String type;
-    private List<String> lineContext;
-    private List<String> overallContext;
+    private Set<String> lineContext;
+    private Set<String> overallContext;
     private long lineContextSimhash;
     private long overallContextSimhash;
 
-    public IndexDocument(String methodCall, String type, List<String> lineContext, List<String> overallContext) {
+    public IndexDocument(String methodCall, String type, Collection<String> lineContext, Collection<String> overallContext) {
         if (type == null || type.equals("")) {
             throw new IllegalArgumentException("Parameter 'type' of IndexDocument must not be null or empty!");
         }
+        this.methodCall = methodCall;
+        this.type = type;
+        // We use a TreeSet so that documents with duplicate words in the context and different order of words in the
+        // context have the same structure and thus create the same ID. Removing duplicate words is mentioned explicitly
+        // in the paper. The order does not contain any relevant information for our algorithm either, because when
+        // creating the base candidate list we only search for documents which contain the same words in the context,
+        // no matter their order in the context (bag of words retrieval).
+        this.lineContext = new TreeSet<>(lineContext);
+        this.overallContext = new TreeSet<>(overallContext);
+        this.simHashBuilder = new SimHashBuilder();
+        this.lineContextSimhash = createSimhashFromStrings(setToList(this.lineContext));
+        this.overallContextSimhash = createSimhashFromStrings(setToList(this.overallContext));
         // We create a unique, deterministic identifier by combining type, method call, and overall context.
         // The id should be deterministic so that when we run the indexing several times, we don't add duplicates
         // to our index. We use SHA256 hashing to limit the length of the id to 64 characters. This is important
         // because we use the id as a file name when serializing the IndexDocument to disk and want to avoid file
         // names that are too long for the operating system to handle. SHA256 hashing should not cause any colli-
         // sions (at least not before the universe comes to an end).
-        String uniqueDeterministicId = type + "_" + (methodCall == null ? "-" : methodCall) + "_" + concatenate(overallContext);
+        String uniqueDeterministicId = type + "_" + (methodCall == null ? "-" : methodCall) + "_" + concatenate(setToList(this.overallContext));
         this.id = DigestUtils.sha256Hex(uniqueDeterministicId);
-
-        this.methodCall = methodCall;
-        this.type = type;
-        this.lineContext = lineContext;
-        this.overallContext = overallContext;
-        this.simHashBuilder = new SimHashBuilder();
-        this.lineContextSimhash = createSimhashFromStrings(lineContext);
-        this.overallContextSimhash = createSimhashFromStrings(overallContext);
     }
 
     /*
@@ -59,11 +63,11 @@ public class IndexDocument implements Serializable {
     }
 
     public List<String> getLineContext() {
-        return lineContext;
+        return setToList(lineContext);
     }
 
     public List<String> getOverallContext() {
-        return overallContext;
+        return setToList(overallContext);
     }
 
     public long getLineContextSimhash() {
@@ -72,6 +76,12 @@ public class IndexDocument implements Serializable {
 
     public long getOverallContextSimhash() {
         return overallContextSimhash;
+    }
+
+    private <T> List<T> setToList(Set<T> set) {
+        List<T> result = new LinkedList<>();
+        result.addAll(set);
+        return result;
     }
 
     private long createSimhashFromStrings(List<String> strings) {
