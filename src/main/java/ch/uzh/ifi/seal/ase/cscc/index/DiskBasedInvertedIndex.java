@@ -5,6 +5,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * Disk index.
@@ -12,6 +13,8 @@ import java.io.*;
  * slower than the {@code InMemoryInvertedIndex}, but useful for large data sets.
  */
 public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
+
+    private final Logger LOGGER = Logger.getLogger(DiskBasedInvertedIndex.class.getName());
 
     private static final String INDEX_ROOT_DIR_NAME = "CSCCInvertedIndex";
     private static final String SERIALIZED_INDEX_DOCUMENTS_DIR_NAME = "IndexDocuments";
@@ -29,22 +32,17 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     }
 
     @Override
-    void serializeIndexDocument(IndexDocument doc) {
+    void serializeIndexDocument(IndexDocument doc) throws IOException {
         // serialize IndexDocument object and store it on disk
         String contextsDirPath = indexFileSystemLocation + "/" + SERIALIZED_INDEX_DOCUMENTS_DIR_NAME;
         createDirectoryIfNotExists(new File(contextsDirPath));
-        try {
-            String contextPath = contextsDirPath + "/" + doc.getId() + ".ser";
-            FileOutputStream fileOut = new FileOutputStream(contextPath);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(doc);
-            out.close();
-            fileOut.close();
-//                System.out.println("Serialized data is saved in " + contextPath);
-        } catch (IOException e) {
-            // ignore for now
-            // TODO investigate question marks as method names
-        }
+        String contextPath = contextsDirPath + "/" + doc.getId() + ".ser";
+        FileOutputStream fileOut = new FileOutputStream(contextPath);
+        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        out.writeObject(doc);
+        out.close();
+        fileOut.close();
+//        System.out.println("Serialized data is saved in " + contextPath);
     }
 
     private void createDirectoryIfNotExists(File dir) {
@@ -82,4 +80,14 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         return doc;
     }
 
+    public void persistToDisk(String targetDir) {
+        // empty implementation to conform to interface, index is persisted immediately
+        // when a new document is added to the index
+    }
+
+    public void initializeFromDisk(String sourceDir) {
+        // empty implementation to conform to interface
+        LOGGER.warning("Called initializeFromDisk method which does not do anything in " +
+                DiskBasedInvertedIndex.class.getSimpleName() + ". Consider removing the call to initializeFromDisk.");
+    }
 }

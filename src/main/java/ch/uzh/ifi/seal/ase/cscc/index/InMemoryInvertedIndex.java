@@ -6,6 +6,7 @@ import org.apache.lucene.store.RAMDirectory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * In-memory index.
@@ -14,6 +15,8 @@ import java.util.Map;
  * {@code DiskBasedInvertedIndex} for data sets which cannot be indexed in-memory.
  */
 public class InMemoryInvertedIndex extends AbstractInvertedIndex {
+
+    private final Logger LOGGER = Logger.getLogger(InMemoryInvertedIndex.class.getName());
 
     // <type, Lucene RAM directory>
     private Map<String, RAMDirectory> ramDirectories = new HashMap<>();
@@ -27,7 +30,7 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
     }
 
     @Override
-    Directory getIndexDirectory(IndexDocument doc) throws IOException {
+    Directory getIndexDirectory(IndexDocument doc) {
         String docType = doc.getType();
         RAMDirectory ramDirForGivenType = ramDirectories.get(docType);
         if (ramDirForGivenType == null) {
@@ -43,12 +46,14 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
         return docsInRAMIndex.get(docID);
     }
 
-    public void persistToDiskLucene(String targetDir) {
+    public void persistToDisk(String targetDir) {
         // TODO: persist Lucene in-memory index to disk
+        LOGGER.warning("Persistence not implemented!");
     }
 
     public void initializeFromDisk(String sourceDir) {
         // TODO: implement
+        LOGGER.warning("Persistence not implemented!");
     }
 
 }

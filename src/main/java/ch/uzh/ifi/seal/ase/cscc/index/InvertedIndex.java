@@ -11,11 +11,12 @@ import java.util.logging.Logger;
  * This is the original implementation of our own Inverted Index design.
  */
 @Deprecated
-public class InvertedIndex {
+public class InvertedIndex implements IInvertedIndex {
 
     private static final String INDEX_ROOT_DIR_NAME = "CSCCInvertedIndex";
     private static final String SERIALIZED_INDEX_DOCUMENTS_DIR_NAME = "IndexDocuments";
     private static final String INVERTED_INDEX_STRUCTURES_DIR_NAME = "InvertedIndexStructures";
+    private final Logger LOGGER = Logger.getLogger(InvertedIndex.class.getName());
 
     // INDEX 1
     // Type - Inverted Index Structure
@@ -103,8 +104,7 @@ public class InvertedIndex {
         try {
             String contextPath = contextsDirPath + "/" + doc.getId() + ".ser";
             if (new File(contextPath).exists()) {
-                Logger logger = Logger.getLogger(InvertedIndex.class.getName());
-                logger.warning("Collision during serialization of IndexDocument: Doc with ID '" + doc.getId() + "' already exists!");
+                LOGGER.info("Collision during serialization of IndexDocument: Doc with ID '" + doc.getId() + "' already exists!");
             }
             FileOutputStream fileOut = new FileOutputStream(contextPath);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);

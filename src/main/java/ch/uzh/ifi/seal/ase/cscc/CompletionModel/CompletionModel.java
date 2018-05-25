@@ -3,9 +3,8 @@ package ch.uzh.ifi.seal.ase.cscc.CompletionModel;
 import cc.kave.commons.model.events.completionevents.Context;
 import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.model.ssts.visitor.ISSTNodeVisitor;
-import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
-import ch.uzh.ifi.seal.ase.cscc.index.InvertedIndex;
-import ch.uzh.ifi.seal.ase.cscc.index.Recommender;
+import ch.uzh.ifi.seal.ase.cscc.index.*;
+import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 
 import java.io.IOException;
@@ -14,7 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CompletionModel {
-    private InvertedIndex index = new InvertedIndex();
+    
+    private IInvertedIndex index = CSCCConfiguration.getNewInvertedIndexInstance();
 
     public CompletionModel() {
     }

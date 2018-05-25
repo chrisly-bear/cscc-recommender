@@ -17,7 +17,7 @@ public class Recommender {
      * @param index       inverted index structure (model) with which to suggest code completions
      * @param receiverObj object, on which the code completion is called
      */
-    public Recommender(InvertedIndex index, IndexDocument receiverObj) {
+    public Recommender(IInvertedIndex index, IndexDocument receiverObj) {
         this.receiverObj = receiverObj;
         baseCandidates = getBaseCandidates(index, receiverObj);
         refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
@@ -25,7 +25,7 @@ public class Recommender {
         topThreeCandidates = getTopThreeCandidates(scoredCandidates);
     }
 
-    private static List<IndexDocument> getBaseCandidates(InvertedIndex index, IndexDocument receiverObj) {
+    private static List<IndexDocument> getBaseCandidates(IInvertedIndex index, IndexDocument receiverObj) {
         List<IndexDocument> baseCandidates = new LinkedList<>();
         baseCandidates.addAll(index.search(receiverObj));
         return baseCandidates;

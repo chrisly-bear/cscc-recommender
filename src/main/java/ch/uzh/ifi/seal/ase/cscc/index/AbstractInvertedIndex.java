@@ -10,7 +10,7 @@ import org.apache.lucene.store.Directory;
 import java.io.*;
 import java.util.*;
 
-public abstract class AbstractInvertedIndex {
+public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     private static final String DOC_ID_FIELD = "docID";
     private static final String OVERALL_CONTEXT_FIELD = "overallContext";
@@ -18,20 +18,24 @@ public abstract class AbstractInvertedIndex {
     /**
      * Puts an IndexDocument in the index.
      * @param doc document to store in index
-     * @throws IOException if the index can't be written to disk
      */
-    public void indexDocument(IndexDocument doc) throws IOException {
-        serializeIndexDocument(doc);
-        Directory indexDirectory = getIndexDirectory(doc);
-        IndexWriterConfig config = new IndexWriterConfig();
-        // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
-        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-        IndexWriter w = new IndexWriter(indexDirectory, config);
-        addDocToLuceneIndex(w, doc);
-        w.close();
+    public void indexDocument(IndexDocument doc) {
+        try {
+            serializeIndexDocument(doc);
+            Directory indexDirectory = getIndexDirectory(doc);
+            IndexWriterConfig config = new IndexWriterConfig();
+            // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
+            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+            IndexWriter w = new IndexWriter(indexDirectory, config);
+            addDocToLuceneIndex(w, doc);
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1); // exit on IOException
+        }
     }
 
-    abstract void serializeIndexDocument(IndexDocument doc);
+    abstract void serializeIndexDocument(IndexDocument doc) throws IOException;
 
     /**
      * Returns either the RAM directory (if index is in-memory index) or the FSDirectory (if index is disk index).
@@ -68,30 +72,35 @@ public abstract class AbstractInvertedIndex {
      * @param doc document for which to find similar documents
      * @return documents which are similar to doc, i.e. documents whose overall context has at least one term in
      * common with doc's overall context
-     * @throws IOException
      */
-    public Set<IndexDocument> search(IndexDocument doc) throws IOException {
+    public Set<IndexDocument> search(IndexDocument doc) {
         Set<IndexDocument> answers = new HashSet<>();
-        Directory indexDirectory = getIndexDirectory(doc);
-        IndexReader reader = DirectoryReader.open(indexDirectory);
-        IndexSearcher searcher = new IndexSearcher(reader);
+        Directory indexDirectory;
+        try {
+            indexDirectory = getIndexDirectory(doc);
+            IndexReader reader = DirectoryReader.open(indexDirectory);
+            IndexSearcher searcher = new IndexSearcher(reader);
 
-        BooleanQuery.Builder boolQueryBuilder = new BooleanQuery.Builder();
-        for (String termStr : doc.getOverallContext()) {
-            Term term = new Term(OVERALL_CONTEXT_FIELD, termStr);
-            Query query = new TermQuery(term);
-            boolQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
-        }
-        Query boolQuery = boolQueryBuilder.build();
-        TopDocs docs = searcher.search(boolQuery, Integer.MAX_VALUE); // TODO: not sure if Integer.MAX_VALUE is such a good idea. There is probably a reason why Lucene does not offer to retrieve all matches at once.
-        ScoreDoc[] hits = docs.scoreDocs;
-        for (ScoreDoc hit : hits) {
-            int luceneDocID = hit.doc;
-            Document luceneDoc = searcher.doc(luceneDocID);
-            String docID = luceneDoc.get(DOC_ID_FIELD);
-            System.out.println(docID);
-            IndexDocument matchingDoc = deserializeIndexDocument(docID);
-            answers.add(matchingDoc);
+            BooleanQuery.Builder boolQueryBuilder = new BooleanQuery.Builder();
+            for (String termStr : doc.getOverallContext()) {
+                Term term = new Term(OVERALL_CONTEXT_FIELD, termStr);
+                Query query = new TermQuery(term);
+                boolQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
+            }
+            Query boolQuery = boolQueryBuilder.build();
+            TopDocs docs = searcher.search(boolQuery, Integer.MAX_VALUE); // TODO: not sure if Integer.MAX_VALUE is such a good idea. There is probably a reason why Lucene does not offer to retrieve all matches at once.
+            ScoreDoc[] hits = docs.scoreDocs;
+            for (ScoreDoc hit : hits) {
+                int luceneDocID = hit.doc;
+                Document luceneDoc = searcher.doc(luceneDocID);
+                String docID = luceneDoc.get(DOC_ID_FIELD);
+                System.out.println(docID);
+                IndexDocument matchingDoc = deserializeIndexDocument(docID);
+                answers.add(matchingDoc);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1); // exit on IOException
         }
         return answers;
     }
@@ -106,7 +115,7 @@ public abstract class AbstractInvertedIndex {
     private static boolean luceneIndexExistsAndIsReadable(Directory indexDir) {
         boolean existsAndIsReadable = false;
         try {
-            IndexReader reader = DirectoryReader.open(indexDir);
+            DirectoryReader.open(indexDir);
             existsAndIsReadable = true;
         } catch (IOException e) {
             // e.printStackTrace();
