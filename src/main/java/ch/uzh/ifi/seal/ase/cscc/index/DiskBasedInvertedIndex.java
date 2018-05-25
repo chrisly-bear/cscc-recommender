@@ -24,6 +24,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
 
     // directory where the Lucene index is persisted on disk
     private String indexFileSystemLocation;
+    // set of docIDs to keep track of already indexed documents
     private Set<String> indexedDocs = new HashSet<>();
 
     /**
@@ -51,7 +52,12 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         out.close();
         fileOut.close();
 //        System.out.println("Serialized data is saved in " + contextPath);
-        this.indexedDocs.add(doc.getId());
+        /*
+         * Careful: If we enable the following line we keep track of the indexed documents
+         * in memory. This reduces I/O because we don't have to read an index from disk to
+         * see if a document is already in the index. However, it lets our memory explode!
+         */
+//        this.indexedDocs.add(doc.getId());
     }
 
     private void createDirectoryIfNotExists(File dir) {
