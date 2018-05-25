@@ -11,7 +11,7 @@ public class CSCCConfiguration {
 
     // location where the index should be stored
     public static final String PERSISTENCE_LOCATION = "Data/Model";
-    public static final String PERSISTENCE_LOCATION_TEST = "/tmp/";
+    public static final String PERSISTENCE_LOCATION_TEST = "/tmp";
 
     // number of statements to consider for overall context
     public static final int LAST_N_CONSIDERED_STATEMENTS = 6;
