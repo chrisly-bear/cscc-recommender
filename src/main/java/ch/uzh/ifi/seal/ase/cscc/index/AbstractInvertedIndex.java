@@ -23,6 +23,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     public void indexDocument(IndexDocument doc) {
         if (isIndexed(doc)) {
             // do not put identical documents in index twice
+//            System.out.println("doc " + doc.getId() + " is already indexed");
             return;
         }
         try {

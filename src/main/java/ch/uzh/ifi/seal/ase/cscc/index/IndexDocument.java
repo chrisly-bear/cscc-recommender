@@ -78,6 +78,14 @@ public class IndexDocument implements Serializable {
         return overallContextSimhash;
     }
 
+    public String getLineContextConcatenated() {
+        return concatenate(setToList(lineContext));
+    }
+
+    public String getOverallContextConcatenated() {
+        return concatenate(setToList(overallContext));
+    }
+
     private <T> List<T> setToList(Set<T> set) {
         List<T> result = new LinkedList<>();
         result.addAll(set);
