@@ -2,7 +2,7 @@ package ch.uzh.ifi.seal.ase.cscc.index;
 
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,9 +70,9 @@ public class InvertedIndexTest {
         }
     }
 
-    @AfterClass
-    public static void cleanUp() throws IOException {
-        System.out.println("All tests are done. Removing index files...");
+    @After
+    public void cleanUp() throws IOException {
+        System.out.println("Removing index files...");
         FileUtils.deleteDirectory(new File(CSCCConfiguration.PERSISTENCE_LOCATION_TEST + "/" + INVERTED_INDEX_DIR_NAME));
     }
 
@@ -111,6 +111,7 @@ public class InvertedIndexTest {
 
     @Test
     public void initializeFromDisk() throws IOException {
+        index.persistToDisk(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
         InvertedIndex indexFromDisk = new InvertedIndex();
         indexFromDisk.initializeFromDisk(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
 
