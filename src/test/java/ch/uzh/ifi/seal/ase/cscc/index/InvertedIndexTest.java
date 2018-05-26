@@ -77,7 +77,7 @@ public class InvertedIndexTest {
     }
 
     @Test
-    public void search() {
+    public void search_InvertedIndex() {
         Set<IndexDocument> answers = index.search(receiverObj1);
 //        System.out.println("Answers: ");
 //        printAnswers(answers);
@@ -85,13 +85,13 @@ public class InvertedIndexTest {
     }
 
     @Test
-    public void searchLuceneInMemory() throws IOException {
+    public void search_InMemoryInvertedIndex() throws IOException {
         Set<IndexDocument> answers = luceneIndexInMemory.search(receiverObj1);
         makeAssertions(answers);
     }
 
     @Test
-    public void searchLuceneDiskBased() throws IOException {
+    public void search_DiskBasedInvertedIndex () throws IOException {
         Set<IndexDocument> answers = luceneIndexDiskBased.search(receiverObj1);
         makeAssertions(answers);
     }
@@ -105,12 +105,12 @@ public class InvertedIndexTest {
     }
 
     @Test
-    public void persist() throws IOException {
+    public void persist_InvertedIndex() throws IOException {
         index.persistToDisk(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
     }
 
     @Test
-    public void initializeFromDisk() throws IOException {
+    public void initializeFromDisk_InvertedIndex() throws IOException {
         index.persistToDisk(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
         InvertedIndex indexFromDisk = new InvertedIndex();
         indexFromDisk.initializeFromDisk(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
