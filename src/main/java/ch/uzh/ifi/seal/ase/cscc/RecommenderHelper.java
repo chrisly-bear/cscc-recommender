@@ -93,7 +93,7 @@ public class RecommenderHelper {
 
             if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
-                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
+                System.out.printf("## %s, processing %s...\n (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);
             }
 
