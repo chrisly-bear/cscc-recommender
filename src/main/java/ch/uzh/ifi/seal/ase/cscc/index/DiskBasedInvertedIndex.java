@@ -82,6 +82,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
                 + ")";
         Statement stmt = sqlConnection.createStatement();
         stmt.execute(sqlCreate);
+        stmt.close();
     }
 
 
@@ -105,6 +106,8 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
             ResultSet rs = stmt.executeQuery(sqlSelect);
             boolean hasItems = rs.isBeforeFirst();
 //            System.out.println(doc.getId() + " already indexed? " + hasItems);
+            rs.close();
+            stmt.close();
             return hasItems;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -146,6 +149,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         prepStmt.setLong(6, doc.getLineContextSimhash());
         prepStmt.setLong(7, doc.getOverallContextSimhash());
         prepStmt.executeUpdate();
+        prepStmt.close();
     }
 
     private void serializeToFile(IndexDocument doc) throws IOException {
@@ -191,6 +195,8 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
                 IndexDocument doc = new IndexDocument(docID, methodCall, type, lineContext, overallContext, lineContextSimhash, overallContextSimhash);
                 return doc;
             }
+            rs.close();
+            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
