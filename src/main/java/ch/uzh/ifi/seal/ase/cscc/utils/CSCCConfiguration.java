@@ -19,12 +19,12 @@ public class CSCCConfiguration {
     public static final int LAST_N_CONSIDERED_STATEMENTS = 6;
 
     // print progress during training
-    public static final boolean PRINT_PROGRESS = false;
+    public static final boolean PRINT_PROGRESS = true;
     // limit the amount of training data, 0 (or smaller) for all data
     public static final int LIMIT_ZIPS = 10;
 
     // default inverted index implementation to use
-    public static final IndexImplementation INDEX_IMPL = IndexImplementation.InvertedIndex;
+    public static final IndexImplementation INDEX_IMPL = IndexImplementation.DiskBasedInvertedIndex;
 
 
     /*
