@@ -12,7 +12,6 @@ import java.util.*;
 public class IndexDocument implements Serializable {
 
     private transient SimHashBuilder simHashBuilder;
-    // would it make sense to use one of the simhashes as id?
     private String id;
     private String methodCall;
     private String type;
@@ -21,6 +20,10 @@ public class IndexDocument implements Serializable {
     private long lineContextSimhash;
     private long overallContextSimhash;
 
+    /**
+     * Use this constructor when creating new IndexDocument objects. DocID and simhashes will be calculated
+     * automatically.
+     */
     public IndexDocument(String methodCall, String type, Collection<String> lineContext, Collection<String> overallContext) {
         if (type == null || type.equals("")) {
             throw new IllegalArgumentException("Parameter 'type' of IndexDocument must not be null or empty!");
@@ -45,6 +48,20 @@ public class IndexDocument implements Serializable {
         // sions (at least not before the universe comes to an end).
         String uniqueDeterministicId = type + "_" + (methodCall == null ? "-" : methodCall) + "_" + concatenate(setToList(this.overallContext));
         this.id = DigestUtils.sha256Hex(uniqueDeterministicId);
+    }
+
+    /**
+     * Use this constructor if you are loading IndexDocument instances from a stored model and you already know their
+     * docID and simhashes.
+     */
+    public IndexDocument(String docId, String methodCall, String type, Collection<String> lineContext, Collection<String> overallContext, long lineContextSimhash, long overallContextSimhash) {
+        id = docId;
+        this.methodCall = methodCall;
+        this.type = type;
+        this.lineContext = new TreeSet<>(lineContext);
+        this.overallContext = new TreeSet<>(overallContext);
+        this.lineContextSimhash = lineContextSimhash;
+        this.overallContextSimhash = overallContextSimhash;
     }
 
     /*

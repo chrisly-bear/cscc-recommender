@@ -6,6 +6,9 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.*;
 import java.sql.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -139,8 +142,8 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         prepStmt.setString(1, doc.getId());
         prepStmt.setString(2, doc.getType());
         prepStmt.setString(3, doc.getMethodCall());
-        prepStmt.setString(4, doc.getLineContextConcatenated());
-        prepStmt.setString(5, doc.getOverallContextConcatenated());
+        prepStmt.setString(4, serializeContext(doc.getLineContext()));
+        prepStmt.setString(5, serializeContext(doc.getOverallContext()));
         prepStmt.setLong(6, doc.getLineContextSimhash());
         prepStmt.setLong(7, doc.getOverallContextSimhash());
         prepStmt.executeUpdate();
@@ -174,8 +177,46 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     }
 
     private IndexDocument deserializeFromSQLite(String docID) {
-        // TODO: implement deserialization from SQLite database
+        String sqlSelect = "SELECT * FROM " + this.SQL_TABLE_NAME + " WHERE docid=\"" + docID + "\"";
+        try {
+            Statement stmt = dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery(sqlSelect);
+            boolean hasItems = rs.isBeforeFirst();
+            if (hasItems) {
+                String methodCall = rs.getString("method");
+                String type = rs.getString("type");
+                List<String> lineContext = deserializeContext(rs.getString("linecontext"));
+                List<String> overallContext = deserializeContext(rs.getString("overallcontext"));
+                long lineContextSimhash = rs.getLong("linecontextsimhash");
+                long overallContextSimhash = rs.getLong("overallcontextsimhash");
+                IndexDocument doc = new IndexDocument(docID, methodCall, type, lineContext, overallContext, lineContextSimhash, overallContextSimhash);
+                return doc;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
+    }
+
+    private String serializeContext(List<String> context) {
+        StringBuilder sb = new StringBuilder();
+        for (String s : context) {
+            sb.append(s.length()); sb.append("~"); sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    private List<String> deserializeContext(String context) {
+        List<String> result = new LinkedList<>();
+        int position = 0;
+        while (position < context.length()) {
+            int tildePosition = position + context.substring(position).indexOf("~");
+            int wordLength = Integer.valueOf(context.substring(position, tildePosition));
+            String s = context.substring(tildePosition+1, tildePosition+1+wordLength);
+            result.add(s);
+            position = tildePosition + wordLength + 1;
+        }
+        return result;
     }
 
     private IndexDocument deserializeFromFile(String docID) throws IOException {

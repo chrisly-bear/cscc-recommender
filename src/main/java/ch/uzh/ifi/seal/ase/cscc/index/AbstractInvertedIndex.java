@@ -106,7 +106,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
                 int luceneDocID = hit.doc;
                 Document luceneDoc = searcher.doc(luceneDocID);
                 String docID = luceneDoc.get(DOC_ID_FIELD);
-                System.out.println(docID);
+//                System.out.println(docID);
                 IndexDocument matchingDoc = deserializeIndexDocument(docID);
                 answers.add(matchingDoc);
             }
