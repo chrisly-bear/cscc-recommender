@@ -3,15 +3,12 @@ package ch.uzh.ifi.seal.ase.cscc.CompletionModel;
 import cc.kave.commons.model.events.completionevents.Context;
 import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.model.ssts.visitor.ISSTNodeVisitor;
-import ch.uzh.ifi.seal.ase.cscc.RunMe;
 import ch.uzh.ifi.seal.ase.cscc.index.*;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
-import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
+import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitorNoList;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.LinkedList;
-import java.util.List;
 
 public class CompletionModel {
     
@@ -34,17 +31,9 @@ public class CompletionModel {
     public void train(Context ctx) {
         ISST sst = ctx.getSST();
 
-        ISSTNodeVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
-        List<IndexDocument> indexDocuments = new LinkedList<>();
+        ISSTNodeVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitorNoList();
 
-        sst.accept(indexDocumentExtractionVisitor, indexDocuments);
-
-        for (IndexDocument document : indexDocuments) {
-            if (!RunMe.keepRunning) {
-                break;
-            }
-            index.indexDocument(document);
-        }
+        sst.accept(indexDocumentExtractionVisitor, index);
     }
 
     private boolean isDirectoryEmpty(Path directory) throws IOException {
