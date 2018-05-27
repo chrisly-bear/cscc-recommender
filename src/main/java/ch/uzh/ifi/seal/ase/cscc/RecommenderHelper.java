@@ -17,15 +17,17 @@ import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
 import ch.uzh.ifi.seal.ase.cscc.visitors.InvocationExpressionVisitor;
 import org.apache.commons.lang.mutable.MutableInt;
 
-import java.io.File;
+import java.io.*;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class RecommenderHelper {
 
     private String contextsDir;
     private String eventsDir;
+    private final Logger LOGGER = Logger.getLogger(RecommenderHelper.class.getName());
 
     public RecommenderHelper(String contextsDir, String eventsDir) {
         this.contextsDir = contextsDir;
@@ -61,6 +63,13 @@ public class RecommenderHelper {
      * @param modelOutputDir an empty directory where to store the learned model
      */
     public void learnModel(String modelOutputDir) {
+
+        boolean isDiskBasedInvertedIndex = (CSCCConfiguration.INDEX_IMPL == CSCCConfiguration.IndexImplementation.DiskBasedInvertedIndex);
+        String continueWithZip = null;
+        if (isDiskBasedInvertedIndex) {
+            continueWithZip = readProgressFile(modelOutputDir);
+        }
+
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
@@ -68,6 +77,18 @@ public class RecommenderHelper {
         CompletionModel completionModel = new CompletionModel();
 
         for (String zip : zips) {
+
+            if (zipCount++ > zipTotal || !RunMe.keepRunning ) break;
+
+            if (continueWithZip != null && !continueWithZip.equals("")) {
+                if (!zip.equals(continueWithZip)) {
+                    continue;
+                } else {
+                    LOGGER.info("Found previous indexing state. Continuing indexing with zip " +
+                                    zipCount + "/" + zipTotal + "(" + continueWithZip + ")");
+                    continueWithZip = null; // reset variable, otherwise we won't get to the remaining zips
+                }
+            }
 
             if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
@@ -84,10 +105,38 @@ public class RecommenderHelper {
                 }
             }
 
-            if (zipCount++ >= zipTotal || !RunMe.keepRunning ) break;
+            if (isDiskBasedInvertedIndex) {
+                writeProgressFile(modelOutputDir, zip);
+            }
         }
 
         completionModel.store(modelOutputDir);
+    }
+
+    private String readProgressFile(String modelOutputDir) {
+        File progressFile = new File(modelOutputDir + "/CSCCInvertedIndex/progress.txt");
+        if (progressFile.exists() && progressFile.isFile()) {
+            try {
+                BufferedReader r = new BufferedReader(new FileReader(progressFile));
+                String text = r.readLine();
+                r.close();
+                return text;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    private void writeProgressFile(String modelOutputDir, String text) {
+        File progressFile = new File(modelOutputDir + "/CSCCInvertedIndex/progress.txt");
+        try {
+            BufferedWriter w = new BufferedWriter(new FileWriter(progressFile));
+            w.write(text);
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
