@@ -24,10 +24,31 @@ public class CSCCConfiguration {
     public static final int LIMIT_ZIPS = 10;
 
     // default inverted index implementation to use
+    public static final IndexImplementation INDEX_IMPL = IndexImplementation.InvertedIndex;
+
+
+    /*
+      DO NOT CONFIGURE ANYTHING BELOW THIS POINT
+     */
+
+    // default inverted index implementation to use
     public static IInvertedIndex getNewInvertedIndexInstance() {
-        return new InvertedIndex();
-//        return new InMemoryInvertedIndex();
-//        return new DiskBasedInvertedIndex(PERSISTENCE_LOCATION);
+        switch (INDEX_IMPL) {
+            case InvertedIndex:
+                return new InvertedIndex();
+            case DiskBasedInvertedIndex:
+                return new DiskBasedInvertedIndex(PERSISTENCE_LOCATION);
+            case InMemoryInvertedIndex:
+                return new InMemoryInvertedIndex();
+            default:
+                return new InMemoryInvertedIndex();
+        }
+    }
+
+    public enum IndexImplementation {
+        InvertedIndex,
+        DiskBasedInvertedIndex,
+        InMemoryInvertedIndex
     }
 
 }

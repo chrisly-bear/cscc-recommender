@@ -77,14 +77,14 @@ public class RecommenderHelper {
 
             try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
-                while (ra.hasNext()) {
+                while (ra.hasNext() && RunMe.keepRunning) {
                     Context ctx = ra.getNext(Context.class);
 
                     completionModel.train(ctx);
                 }
             }
 
-            if (zipCount++ >= zipTotal) break;
+            if (zipCount++ >= zipTotal || !RunMe.keepRunning ) break;
         }
 
         completionModel.store(modelOutputDir);

@@ -3,6 +3,7 @@ package ch.uzh.ifi.seal.ase.cscc.CompletionModel;
 import cc.kave.commons.model.events.completionevents.Context;
 import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.model.ssts.visitor.ISSTNodeVisitor;
+import ch.uzh.ifi.seal.ase.cscc.RunMe;
 import ch.uzh.ifi.seal.ase.cscc.index.*;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
@@ -39,6 +40,9 @@ public class CompletionModel {
         sst.accept(indexDocumentExtractionVisitor, indexDocuments);
 
         for (IndexDocument document : indexDocuments) {
+            if (!RunMe.keepRunning) {
+                break;
+            }
             index.indexDocument(document);
         }
     }
