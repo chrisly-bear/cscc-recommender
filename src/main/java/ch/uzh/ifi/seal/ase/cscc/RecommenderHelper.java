@@ -106,7 +106,8 @@ public class RecommenderHelper {
                 }
             }
 
-            if (isDiskBasedInvertedIndex) {
+            // only store progress if current zip file processing has not been interrupted
+            if (isDiskBasedInvertedIndex && RunMe.keepRunning) {
                 writeProgressFile(modelOutputDir, zip);
             }
         }
