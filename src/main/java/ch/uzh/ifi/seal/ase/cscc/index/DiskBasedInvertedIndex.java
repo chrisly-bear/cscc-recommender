@@ -6,7 +6,6 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.*;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
