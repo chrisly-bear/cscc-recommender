@@ -78,7 +78,7 @@ public class RecommenderHelper {
 
         for (String zip : zips) {
 
-            if (zipCount++ > zipTotal || !RunMe.keepRunning ) break;
+            if (++zipCount > zipTotal || !RunMe.keepRunning ) break;
 
             if (continueWithZip != null && !continueWithZip.equals("")) {
                 if (!zip.equals(continueWithZip)) {
@@ -87,6 +87,7 @@ public class RecommenderHelper {
                     LOGGER.info("Found previous indexing state. Continuing indexing with zip " +
                                     zipCount + "/" + zipTotal + "(" + continueWithZip + ")");
                     continueWithZip = null; // reset variable, otherwise we won't get to the remaining zips
+                    continue; // progress file stores the last fully processed zip file -> continue with next one
                 }
             }
 
