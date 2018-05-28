@@ -110,6 +110,10 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
                 IndexDocument matchingDoc = deserializeIndexDocument(docID);
                 answers.add(matchingDoc);
             }
+        } catch (IndexNotFoundException e) {
+            // if there is no inverted index structure for the type we're looking for we can't make a
+            // completion recommendation
+            System.out.println("INDEX NOT AVAILABLE FOR TYPE " + doc.getType() + ". NO SUGGESTION POSSIBLE!");
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1); // exit on IOException
