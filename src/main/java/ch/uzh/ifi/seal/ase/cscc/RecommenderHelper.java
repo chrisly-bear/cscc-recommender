@@ -159,6 +159,9 @@ public class RecommenderHelper {
         CompletionModelEval eval = new CompletionModelEval(model);
 
         for (String zip : zips) {
+
+            if (++zipCount > zipTotal) break;
+
             double perc = 100 * zipCount / (double) zipTotal;
 
             if (CSCCConfiguration.PRINT_PROGRESS) {
@@ -181,6 +184,7 @@ public class RecommenderHelper {
                                 IndexDocumentExtractionVisitor indexDocumentExtractionVisitor = new IndexDocumentExtractionVisitor();
                                 List<IndexDocument> indexDocuments = new LinkedList<>();
 
+                                // get all method invocations (indexDocuments) of the event
                                 event.context.getSST().accept(indexDocumentExtractionVisitor, indexDocuments);
 
                                 for (IndexDocument document : indexDocuments) {
@@ -201,8 +205,6 @@ public class RecommenderHelper {
                     }
                 }
             }
-
-            if (zipCount++ >= zipTotal) break;
         }
 
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
@@ -218,7 +220,8 @@ public class RecommenderHelper {
         int zipsTotal = getNumZips(zips);
         int zipCount = 0;
         for (String zip : zips) {
-            int ctxCount = 0;
+            if (++zipCount > zipsTotal) break;
+            int ctxCount = 1;
             System.out.println("Processing " + zip);
             IReadingArchive ra = new ReadingArchive(new File(zip));
             while (ra.hasNext()) {
@@ -232,7 +235,6 @@ public class RecommenderHelper {
                 ctxCount++;
             }
             ra.close();
-            if (zipCount++ >= zipsTotal) break;
         }
         System.out.println("Total #InvocationExpressions: " + invocationExpressionCount);
     }
@@ -252,6 +254,8 @@ public class RecommenderHelper {
 
         for (String zip : zips) {
 
+            if (++zipCount > zipTotal) break;
+
             if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
@@ -269,8 +273,6 @@ public class RecommenderHelper {
                     }
                 }
             }
-
-            if (zipCount++ >= zipTotal) break;
         }
 
         // close database connection
@@ -285,6 +287,9 @@ public class RecommenderHelper {
         CompletionModelEval eval = new CompletionModelEval(completionModel);
 
         for (String zip : zips) {
+
+            if (++zipCount > zipTotal) break;
+
             if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
                 System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
@@ -311,8 +316,6 @@ public class RecommenderHelper {
                     }
                 }
             }
-
-            if (zipCount++ >= zipTotal) break;
         }
 
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
