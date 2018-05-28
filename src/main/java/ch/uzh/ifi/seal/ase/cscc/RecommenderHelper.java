@@ -112,6 +112,9 @@ public class RecommenderHelper {
             }
         }
 
+        // close database connection
+        completionModel.cleanUp();
+
         completionModel.store(modelOutputDir);
     }
 
@@ -269,6 +272,9 @@ public class RecommenderHelper {
 
             if (zipCount++ >= zipTotal) break;
         }
+
+        // close database connection
+        completionModel.cleanUp();
     }
 
     private void performCrossValidation(int bucketSize, int testBucketNum, CompletionModel completionModel) {

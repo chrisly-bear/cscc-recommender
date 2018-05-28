@@ -85,6 +85,18 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         stmt.close();
     }
 
+    /**
+     * Call this method when this instance is not used anymore. It closes the SQLite connection.
+     */
+    public void cleanUp() {
+        if (USE_SQLITE && dbConn != null) {
+            try {
+                dbConn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /*
       AbstractInvertedIndex IMPLEMENTATIONS

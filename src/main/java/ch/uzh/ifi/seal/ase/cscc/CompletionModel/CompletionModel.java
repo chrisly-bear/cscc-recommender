@@ -36,6 +36,17 @@ public class CompletionModel {
         sst.accept(indexDocumentExtractionVisitor, index);
     }
 
+    /**
+     * Clean things up in the IInvertedIndex when we don't need the instance anymore.
+     */
+    public void cleanUp() {
+        if (index instanceof DiskBasedInvertedIndex) {
+            System.out.println("Closing DiskBasedInvertedIndex cleanly...");
+            DiskBasedInvertedIndex dbindex = (DiskBasedInvertedIndex) index;
+            dbindex.cleanUp();
+        }
+    }
+
     private boolean isDirectoryEmpty(Path directory) throws IOException {
         try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(directory)) {
             return !dirStream.iterator().hasNext();
