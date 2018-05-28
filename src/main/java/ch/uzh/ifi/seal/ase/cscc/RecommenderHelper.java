@@ -257,19 +257,22 @@ public class RecommenderHelper {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
+        int zipCountInBucket = 0;
 
         for (String zip : zips) {
 
             if (++zipCount > zipTotal) break;
 
-            if (CSCCConfiguration.PRINT_PROGRESS) {
-                double perc = 100 * zipCount / (double) zipTotal;
-                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
-                        perc);
-            }
-
             // if current zip is not in test bucket we use it for training
             if (!zipIsInTestBucket(zipCount, testBucketNum, bucketSize)) {
+
+                if (CSCCConfiguration.PRINT_PROGRESS) {
+                    zipCountInBucket++;
+                    double perc = 100 * zipCountInBucket / (double) (zipTotal - bucketSize);
+                    System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCountInBucket, (zipTotal - bucketSize),
+                            perc);
+                }
+
                 try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                     while (ra.hasNext()) {
@@ -292,6 +295,7 @@ public class RecommenderHelper {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
+        int zipCountInBucket = 0;
 
         CompletionModelEval eval = new CompletionModelEval(completionModel);
 
@@ -299,14 +303,16 @@ public class RecommenderHelper {
 
             if (++zipCount > zipTotal) break;
 
-            if (CSCCConfiguration.PRINT_PROGRESS) {
-                double perc = 100 * zipCount / (double) zipTotal;
-                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
-                        perc);
-            }
-
             // if current zip is in the test bucket we use it for evaluation
             if (zipIsInTestBucket(zipCount, testBucketNum, bucketSize)) {
+
+                if (CSCCConfiguration.PRINT_PROGRESS) {
+                    zipCountInBucket++;
+                    double perc = 100 * zipCountInBucket / (double) bucketSize;
+                    System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCountInBucket, bucketSize,
+                            perc);
+                }
+
                 try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                     while (ra.hasNext()) {
@@ -327,6 +333,7 @@ public class RecommenderHelper {
                             eval.evaluate(document);
                         }
                     }
+                    System.out.println();
                 }
             }
         }
