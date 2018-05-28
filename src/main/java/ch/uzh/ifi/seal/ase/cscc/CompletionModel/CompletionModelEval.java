@@ -13,6 +13,11 @@ public class CompletionModelEval {
         this.model = model;
     }
 
+    /**
+     * Test if our model recommends the given method.
+     * @param document The ground truth method to test against. If this method is in our recommendation then we
+     *                 consider this recommendation as correct.
+     */
     public void evaluate(IndexDocument document) {
         Recommender recommender = model.getRecommender(document);
 

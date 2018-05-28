@@ -122,10 +122,12 @@ public class RecommenderHelper {
             try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                 while (ra.hasNext() && RunMe.keepRunning) {
+                    System.out.printf("."); // print '.' to indicate that a context is being processed
                     Context ctx = ra.getNext(Context.class);
-
                     completionModel.train(ctx);
                 }
+                ra.close();
+                System.out.println();
             }
 
             // only store progress if current zip file processing has not been interrupted
@@ -194,6 +196,9 @@ public class RecommenderHelper {
             try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                 while (ra.hasNext()) {
+
+                    System.out.printf("."); // print '.' to indicate that a context is being processed
+
                     IDEEvent evt = ra.getNext(IDEEvent.class);
 
                     if (evt instanceof CompletionEvent) {
@@ -210,9 +215,12 @@ public class RecommenderHelper {
                                 event.context.getSST().accept(indexDocumentExtractionVisitor, indexDocuments);
 
                                 for (IndexDocument document : indexDocuments) {
-                                    // only evaluate for the IndexDocument that correlates with the given method call
-
+                                    // Only evaluate for the IndexDocument that correlates with the given method call.
+                                    // Note that we might find several method calls of the same given name in the same
+                                    // context. Thus we can't be certain that we only get the one which was used in the
+                                    // completion event.
                                     if (document.getMethodCall().equals(methodName.getName())) {
+                                        System.out.printf("'"); // print ' to indicate that an IndexDocument is being evaluated
                                         eval.evaluate(document);
                                     }
                                 }
@@ -226,6 +234,8 @@ public class RecommenderHelper {
                         }
                     }
                 }
+                ra.close();
+                System.out.println();
             }
         }
 
@@ -292,10 +302,12 @@ public class RecommenderHelper {
                 try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                     while (ra.hasNext()) {
+                        System.out.printf("."); // print '.' to indicate that a context is being processed
                         Context ctx = ra.getNext(Context.class);
-
                         completionModel.train(ctx);
                     }
+                    ra.close();
+                    System.out.println();
                 }
             }
         }
@@ -356,6 +368,7 @@ public class RecommenderHelper {
                             eval.evaluate(document);
                         }
                     }
+                    ra.close();
                     System.out.println();
                 }
             }
