@@ -117,19 +117,23 @@ public class RecommenderHelper {
 
             if (CSCCConfiguration.PRINT_PROGRESS) {
                 double perc = 100 * zipCount / (double) zipTotal;
-                System.out.printf("## %s, processing %s...\n (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
+                System.out.printf("## %s, processing %s...\n(%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);
             }
 
             try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                 while (ra.hasNext() && CSCCConfiguration.keepRunning) {
-                    System.out.printf("."); // print '.' to indicate that a context is being processed
+                    if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                        System.out.printf("."); // print '.' to indicate that a context is being processed
+                    }
                     Context ctx = ra.getNext(Context.class);
                     completionModel.train(ctx);
                 }
                 ra.close();
-                System.out.println();
+                if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                    System.out.println();
+                }
             }
 
             // only store progress if current zip file processing has not been interrupted
@@ -209,7 +213,7 @@ public class RecommenderHelper {
             double perc = 100 * zipCount / (double) zipTotal;
 
             if (CSCCConfiguration.PRINT_PROGRESS) {
-                System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
+                System.out.printf("## %s, processing %s...\n(%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
                         perc);
             }
 
@@ -217,7 +221,9 @@ public class RecommenderHelper {
 
                 while (ra.hasNext()) {
 
-                    System.out.printf("."); // print '.' to indicate that a context is being processed
+                    if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                        System.out.printf("."); // print '.' to indicate that a context is being processed
+                    }
 
                     IDEEvent evt = ra.getNext(IDEEvent.class);
 
@@ -240,7 +246,9 @@ public class RecommenderHelper {
                                     // context. Thus we can't be certain that we only get the one which was used in the
                                     // completion event.
                                     if (document.getMethodCall().equals(methodName.getName())) {
-                                        System.out.printf("'"); // print ' to indicate that an IndexDocument is being evaluated
+                                        if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                                            System.out.printf("'"); // print ' to indicate that an IndexDocument is being evaluated
+                                        }
                                         eval.evaluate(document);
                                     }
                                 }
@@ -255,7 +263,9 @@ public class RecommenderHelper {
                     }
                 }
                 ra.close();
-                System.out.println();
+                if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                    System.out.println();
+                }
             }
         }
 
@@ -315,19 +325,23 @@ public class RecommenderHelper {
                 if (CSCCConfiguration.PRINT_PROGRESS) {
                     zipCountInBucket++;
                     double perc = 100 * zipCountInBucket / (double) (zipTotal - bucketSize);
-                    System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCountInBucket, (zipTotal - bucketSize),
+                    System.out.printf("## %s, processing %s...\n(%d/%d, %.1f%% done)\n", new Date(), zip, zipCountInBucket, (zipTotal - bucketSize),
                             perc);
                 }
 
                 try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                     while (ra.hasNext()) {
-                        System.out.printf("."); // print '.' to indicate that a context is being processed
+                        if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                            System.out.printf("."); // print '.' to indicate that a context is being processed
+                        }
                         Context ctx = ra.getNext(Context.class);
                         completionModel.train(ctx);
                     }
                     ra.close();
-                    System.out.println();
+                    if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                        System.out.println();
+                    }
                 }
             }
         }
@@ -364,7 +378,7 @@ public class RecommenderHelper {
                 if (CSCCConfiguration.PRINT_PROGRESS) {
                     zipCountInBucket++;
                     double perc = 100 * zipCountInBucket / (double) bucketSize;
-                    System.out.printf("## %s, processing %s... (%d/%d, %.1f%% done)\n", new Date(), zip, zipCountInBucket, bucketSize,
+                    System.out.printf("## %s, processing %s...\n(%d/%d, %.1f%% done)\n", new Date(), zip, zipCountInBucket, bucketSize,
                             perc);
                 }
 
@@ -372,7 +386,9 @@ public class RecommenderHelper {
 
                     while (ra.hasNext()) {
 
-                        System.out.printf("."); // print '.' to indicate that a context is being processed
+                        if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                            System.out.printf("."); // print '.' to indicate that a context is being processed
+                        }
 
                         Context ctx = ra.getNext(Context.class);
 
@@ -384,12 +400,16 @@ public class RecommenderHelper {
                         sst.accept(indexDocumentExtractionVisitor, indexDocuments);
 
                         for (IndexDocument document : indexDocuments) {
-                            System.out.printf("'"); // print ' to indicate that an IndexDocument is being evaluated
+                            if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                                System.out.printf("'"); // print ' to indicate that an IndexDocument is being evaluated
+                            }
                             eval.evaluate(document);
                         }
                     }
                     ra.close();
-                    System.out.println();
+                    if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                        System.out.println();
+                    }
                 }
             }
         }

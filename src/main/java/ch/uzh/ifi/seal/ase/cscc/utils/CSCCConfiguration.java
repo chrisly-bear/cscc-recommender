@@ -18,8 +18,10 @@ public class CSCCConfiguration {
     // number of statements to consider for overall context
     public static final int LAST_N_CONSIDERED_STATEMENTS = 6;
 
-    // print progress during training
-    public static final boolean PRINT_PROGRESS = true;
+    // print progress about which zip file is currently being processed
+    public static final boolean PRINT_PROGRESS = false;
+    // print progress about contexts being processed within a zip file
+    public static final boolean PRINT_PROGRESS_CONTEXTS = true;
     // limit the amount of training data, 0 (or smaller) for all data
     public static final int LIMIT_ZIPS = 10;
 
