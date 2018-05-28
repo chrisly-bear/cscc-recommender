@@ -26,7 +26,7 @@ public class IndexDocumentExtractionVisitorNoList extends AbstractTraversingNode
     @Override
     protected List<Void> visit(List<IStatement> body, IInvertedIndex index) {
         for (IStatement statement : body) {
-            if (isDiskBasedInvertedIndex && !RunMe.keepRunning) {
+            if (isDiskBasedInvertedIndex && !CSCCConfiguration.keepRunning) {
                 break;
             }
             if (statement instanceof IExpressionStatement || statement instanceof IAssignment) {

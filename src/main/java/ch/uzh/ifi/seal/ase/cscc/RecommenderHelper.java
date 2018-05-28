@@ -86,6 +86,8 @@ public class RecommenderHelper {
      */
     public void learnModel(String modelOutputDir) {
 
+        addShutdownHook();
+
         boolean isDiskBasedInvertedIndex = (CSCCConfiguration.INDEX_IMPL == CSCCConfiguration.IndexImplementation.DiskBasedInvertedIndex);
         String continueWithZip = null;
         if (isDiskBasedInvertedIndex) {
@@ -100,7 +102,7 @@ public class RecommenderHelper {
 
         for (String zip : zips) {
 
-            if (++zipCount > zipTotal || !RunMe.keepRunning ) break;
+            if (++zipCount > zipTotal || !CSCCConfiguration.keepRunning ) break;
 
             if (continueWithZip != null && !continueWithZip.equals("")) {
                 if (!zip.equals(continueWithZip)) {
@@ -121,7 +123,7 @@ public class RecommenderHelper {
 
             try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
-                while (ra.hasNext() && RunMe.keepRunning) {
+                while (ra.hasNext() && CSCCConfiguration.keepRunning) {
                     System.out.printf("."); // print '.' to indicate that a context is being processed
                     Context ctx = ra.getNext(Context.class);
                     completionModel.train(ctx);
@@ -131,7 +133,7 @@ public class RecommenderHelper {
             }
 
             // only store progress if current zip file processing has not been interrupted
-            if (isDiskBasedInvertedIndex && RunMe.keepRunning) {
+            if (isDiskBasedInvertedIndex && CSCCConfiguration.keepRunning) {
                 writeProgressFile(modelOutputDir, zip);
             }
         }
@@ -140,6 +142,24 @@ public class RecommenderHelper {
         completionModel.cleanUp();
 
         completionModel.store(modelOutputDir);
+    }
+
+    /**
+     * Shuts down DiskBasedInvertedIndex gracefully so that indexing can continue when it is started again.
+     */
+    private static void addShutdownHook() {
+        if (CSCCConfiguration.INDEX_IMPL == CSCCConfiguration.IndexImplementation.DiskBasedInvertedIndex) {
+            final Thread mainThread = Thread.currentThread();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println(" === SHUTTING DOWN GRACEFULLY ===");
+                CSCCConfiguration.keepRunning = false;
+                try {
+                    mainThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }));
+        }
     }
 
     private String readProgressFile(String modelOutputDir) {

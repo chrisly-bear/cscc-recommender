@@ -51,4 +51,8 @@ public class CSCCConfiguration {
         InMemoryInvertedIndex
     }
 
+    // global variable which is set to false when an interrupt (Ctrl + C) is recognized,
+    // used to make a graceful shutdown during training phase
+    public static volatile boolean keepRunning = true;
+
 }
