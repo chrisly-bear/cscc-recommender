@@ -42,9 +42,11 @@ public class RecommenderHelper {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipsTotal = getNumZips(zips);
 
+        float[] precisions = new float[10];
+        float[] recalls = new float[10];
+
         // let's just divide the zips in 10 buckets, naively assuming they all contain about the
         // same number of contexts
-
         int bucketSize = zipsTotal / 10;
 
         // for each bucket, train a model and evaluate it
@@ -59,8 +61,22 @@ public class RecommenderHelper {
             modelFromTrainingBuckets(bucketSize, i, completionModel);
 
             System.out.printf("evaluating model %d/%d\n", i, 10);
-            performCrossValidation(bucketSize, i, completionModel);
+            float[] result = performCrossValidation(bucketSize, i, completionModel);
+            precisions[i-1] = result[0];
+            recalls[i-1] = result[1];
         }
+        System.out.printf("-------------------------------\n" +
+                "overall 10-fold precision = %.0f%%\n" +
+                "overall 10-fold recall = %.0f%%\n" +
+                "-------------------------------\n", calculateAverage(precisions), calculateAverage(recalls));
+    }
+
+    private float calculateAverage(float[] values) {
+        float sum = 0;
+        for (float v : values) {
+            sum += v;
+        }
+        return sum/values.length;
     }
 
     /**
@@ -291,7 +307,14 @@ public class RecommenderHelper {
         return (zipLower <= zipNum && zipNum <= zipUpper);
     }
 
-    private void performCrossValidation(int bucketSize, int testBucketNum, CompletionModel completionModel) {
+    /**
+     *
+     * @param bucketSize
+     * @param testBucketNum
+     * @param completionModel
+     * @return result of cross validation: index 0 contains precision, index 1 contains recall
+     */
+    private float[] performCrossValidation(int bucketSize, int testBucketNum, CompletionModel completionModel) {
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
@@ -338,9 +361,13 @@ public class RecommenderHelper {
             }
         }
 
-        System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
+        float precision = eval.getPrecision();
+        float recall = eval.getRecall();
+        System.out.printf("precision = %.0f%%, recall = %.0f%%\n", precision, recall);
 
         // close database connection
         completionModel.cleanUp();
+
+        return new float[] {precision, recall};
     }
 }
