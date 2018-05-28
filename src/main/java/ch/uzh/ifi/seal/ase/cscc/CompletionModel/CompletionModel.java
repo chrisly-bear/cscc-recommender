@@ -18,7 +18,7 @@ public class CompletionModel {
      * Uses the globally defined IInvertedIndex implementation (see CSCCConfiguration.java).
      */
     public CompletionModel() {
-        new CompletionModel(CSCCConfiguration.INDEX_IMPL);
+        this(CSCCConfiguration.INDEX_IMPL);
     }
 
     /**
