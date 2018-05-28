@@ -12,9 +12,31 @@ import java.nio.file.*;
 
 public class CompletionModel {
     
-    private IInvertedIndex index = CSCCConfiguration.getNewInvertedIndexInstance();
+    private IInvertedIndex index = null;
 
+    /**
+     * Uses the globally defined IInvertedIndex implementation (see CSCCConfiguration.java).
+     */
     public CompletionModel() {
+        new CompletionModel(CSCCConfiguration.INDEX_IMPL);
+    }
+
+    /**
+     * Specify the IInvertedIndex implementation you want to use for the CompletionModel.
+     * @param indexImpl IInvertedIndex implementation to use
+     */
+    public CompletionModel(CSCCConfiguration.IndexImplementation indexImpl) {
+        switch (indexImpl) {
+            case InvertedIndex:
+                this.index = new InvertedIndex();
+                break;
+            case DiskBasedInvertedIndex:
+                this.index = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION);
+                break;
+            default:
+                this.index = new InMemoryInvertedIndex();
+                break;
+        }
     }
 
     public static CompletionModel fromDisk(String modelDir) {

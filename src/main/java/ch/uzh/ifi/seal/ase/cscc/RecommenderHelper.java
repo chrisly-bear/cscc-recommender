@@ -47,12 +47,18 @@ public class RecommenderHelper {
 
         int bucketSize = zipsTotal / 10;
 
-        for (int i = 0; i < 10; i++) {
-            CompletionModel completionModel = new CompletionModel();
-            System.out.printf("training model %d\n", i);
+        // for each bucket, train a model and evaluate it
+        for (int i = 1; i <= 10; i++) {
+            // Use the InMemoryInvertedIndex for cross-validation, otherwise we will interfere with a possibly already trained
+            // model from a DiskBasedInvertedIndex. If you want to use a DiskBasedInvertedIndex (e.g. because of memory
+            // limitations), you would have to make sure that each bucket is trained in a different folder (or that
+            // after each bucket you delete the previously trained model).
+            CompletionModel completionModel = new CompletionModel(CSCCConfiguration.IndexImplementation.InMemoryInvertedIndex);
 
+            System.out.printf("training model %d/%d\n", i, 10);
             modelFromTrainingBuckets(bucketSize, i, completionModel);
 
+            System.out.printf("evaluating model %d/%d\n", i, 10);
             performCrossValidation(bucketSize, i, completionModel);
         }
     }
@@ -262,8 +268,8 @@ public class RecommenderHelper {
                         perc);
             }
 
-            // if we are in one of the training buckets
-            if (zipCount < bucketSize * testBucketNum || zipCount >= (bucketSize * testBucketNum + 1)) {
+            // if current zip is not in test bucket we use it for training
+            if (!zipIsInTestBucket(zipCount, testBucketNum, bucketSize)) {
                 try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                     while (ra.hasNext()) {
@@ -274,9 +280,12 @@ public class RecommenderHelper {
                 }
             }
         }
+    }
 
-        // close database connection
-        completionModel.cleanUp();
+    private boolean zipIsInTestBucket(int zipNum, int testBucketNum, int bucketSize) {
+        int zipLower = bucketSize * (testBucketNum-1) + 1;
+        int zipUpper = bucketSize * testBucketNum;
+        return (zipLower <= zipNum && zipNum <= zipUpper);
     }
 
     private void performCrossValidation(int bucketSize, int testBucketNum, CompletionModel completionModel) {
@@ -296,11 +305,14 @@ public class RecommenderHelper {
                         perc);
             }
 
-            // if we are in the test bucket
-            if (zipCount >= bucketSize * testBucketNum && zipCount < bucketSize * (testBucketNum + 1)) {
+            // if current zip is in the test bucket we use it for evaluation
+            if (zipIsInTestBucket(zipCount, testBucketNum, bucketSize)) {
                 try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
                     while (ra.hasNext()) {
+
+                        System.out.printf("."); // print '.' to indicate that a context is being processed
+
                         Context ctx = ra.getNext(Context.class);
 
                         ISST sst = ctx.getSST();
@@ -311,6 +323,7 @@ public class RecommenderHelper {
                         sst.accept(indexDocumentExtractionVisitor, indexDocuments);
 
                         for (IndexDocument document : indexDocuments) {
+                            System.out.printf("'"); // print ' to indicate that an IndexDocument is being evaluated
                             eval.evaluate(document);
                         }
                     }
@@ -319,5 +332,8 @@ public class RecommenderHelper {
         }
 
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", eval.getPrecision(), eval.getRecall());
+
+        // close database connection
+        completionModel.cleanUp();
     }
 }
