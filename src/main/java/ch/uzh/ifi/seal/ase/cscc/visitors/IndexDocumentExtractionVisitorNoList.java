@@ -7,7 +7,6 @@ import cc.kave.commons.model.ssts.expressions.assignable.IInvocationExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.statements.IAssignment;
 import cc.kave.commons.model.ssts.statements.IExpressionStatement;
-import ch.uzh.ifi.seal.ase.cscc.RunMe;
 import ch.uzh.ifi.seal.ase.cscc.index.IInvertedIndex;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
@@ -21,12 +20,11 @@ import java.util.*;
 public class IndexDocumentExtractionVisitorNoList extends AbstractTraversingNodeVisitor<IInvertedIndex, Void> {
 
     private final ContextVisitor CONTEXT_VISITOR = new ContextVisitor();
-    private final boolean isDiskBasedInvertedIndex = (CSCCConfiguration.INDEX_IMPL == CSCCConfiguration.IndexImplementation.DiskBasedInvertedIndex);
 
     @Override
     protected List<Void> visit(List<IStatement> body, IInvertedIndex index) {
         for (IStatement statement : body) {
-            if (isDiskBasedInvertedIndex && !CSCCConfiguration.keepRunning) {
+            if (!CSCCConfiguration.keepRunning) {
                 break;
             }
             if (statement instanceof IExpressionStatement || statement instanceof IAssignment) {

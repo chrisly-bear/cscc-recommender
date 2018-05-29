@@ -1,10 +1,5 @@
 package ch.uzh.ifi.seal.ase.cscc.utils;
 
-import ch.uzh.ifi.seal.ase.cscc.index.DiskBasedInvertedIndex;
-import ch.uzh.ifi.seal.ase.cscc.index.IInvertedIndex;
-import ch.uzh.ifi.seal.ase.cscc.index.InMemoryInvertedIndex;
-import ch.uzh.ifi.seal.ase.cscc.index.InvertedIndex;
-
 public class CSCCConfiguration {
 
     // location of the KaVE dataset
@@ -25,33 +20,10 @@ public class CSCCConfiguration {
     // limit the amount of training data, 0 (or smaller) for all data
     public static final int LIMIT_ZIPS = 10;
 
-    // default inverted index implementation to use
-    public static final IndexImplementation INDEX_IMPL = IndexImplementation.DiskBasedInvertedIndex;
-
 
     /*
       DO NOT CONFIGURE ANYTHING BELOW THIS POINT
      */
-
-    // default inverted index implementation to use
-    public static IInvertedIndex getNewInvertedIndexInstance() {
-        switch (INDEX_IMPL) {
-            case InvertedIndex:
-                return new InvertedIndex();
-            case DiskBasedInvertedIndex:
-                return new DiskBasedInvertedIndex(PERSISTENCE_LOCATION);
-            case InMemoryInvertedIndex:
-                return new InMemoryInvertedIndex();
-            default:
-                return new InMemoryInvertedIndex();
-        }
-    }
-
-    public enum IndexImplementation {
-        InvertedIndex,
-        DiskBasedInvertedIndex,
-        InMemoryInvertedIndex
-    }
 
     // global variable which is set to false when an interrupt (Ctrl + C) is recognized,
     // used to make a graceful shutdown during training phase

@@ -10,6 +10,9 @@ import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEval;
+import ch.uzh.ifi.seal.ase.cscc.index.DiskBasedInvertedIndex;
+import ch.uzh.ifi.seal.ase.cscc.index.IInvertedIndex;
+import ch.uzh.ifi.seal.ase.cscc.index.InMemoryInvertedIndex;
 import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
@@ -55,7 +58,7 @@ public class RecommenderHelper {
             // model from a DiskBasedInvertedIndex. If you want to use a DiskBasedInvertedIndex (e.g. because of memory
             // limitations), you would have to make sure that each bucket is trained in a different folder (or that
             // after each bucket you delete the previously trained model).
-            CompletionModel completionModel = new CompletionModel(CSCCConfiguration.IndexImplementation.InMemoryInvertedIndex);
+            CompletionModel completionModel = new CompletionModel(new InMemoryInvertedIndex());
 
             System.out.printf("training model %d/%d\n", i, 10);
             modelFromTrainingBuckets(bucketSize, i, completionModel);
@@ -80,25 +83,25 @@ public class RecommenderHelper {
     }
 
     /**
-     * Learn the model on the full Contexts data set.
-     *
-     * @param modelOutputDir an empty directory where to store the learned model
+     * Train the model on the full contexts data set. The model will be persisted at the given location as it is being
+     * trained. This allows training to be interrupted and continued at a later point. If a previously trained model is
+     * found in the modelOutputDir, training will pick up where it left off last time.
+     * ATTENTION: You can only continue training on the same training data. This means the structure of the contextDir
+     * must be the same (still contain the same zips) as last time.
+     * @param modelOutputDir Directory where to store the learned model. Will create a subdirectory called 'CSCCInvertedIndex'.
      */
-    public void learnModel(String modelOutputDir) {
+    public void trainModel(String modelOutputDir) {
 
         addShutdownHook();
 
-        boolean isDiskBasedInvertedIndex = (CSCCConfiguration.INDEX_IMPL == CSCCConfiguration.IndexImplementation.DiskBasedInvertedIndex);
-        String continueWithZip = null;
-        if (isDiskBasedInvertedIndex) {
-            continueWithZip = readProgressFile(modelOutputDir);
-        }
+        String continueWithZip = readProgressFile(modelOutputDir);
 
         List<String> zips = IoHelper.findAllZips(contextsDir);
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
 
-        CompletionModel completionModel = new CompletionModel();
+        IInvertedIndex diskIndex = new DiskBasedInvertedIndex(modelOutputDir);
+        CompletionModel completionModel = new CompletionModel(diskIndex);
 
         for (String zip : zips) {
 
@@ -137,33 +140,29 @@ public class RecommenderHelper {
             }
 
             // only store progress if current zip file processing has not been interrupted
-            if (isDiskBasedInvertedIndex && CSCCConfiguration.keepRunning) {
+            if (CSCCConfiguration.keepRunning) {
                 writeProgressFile(modelOutputDir, zip);
             }
         }
 
         // close database connection
         completionModel.cleanUp();
-
-        completionModel.store(modelOutputDir);
     }
 
     /**
      * Shuts down DiskBasedInvertedIndex gracefully so that indexing can continue when it is started again.
      */
     private static void addShutdownHook() {
-        if (CSCCConfiguration.INDEX_IMPL == CSCCConfiguration.IndexImplementation.DiskBasedInvertedIndex) {
-            final Thread mainThread = Thread.currentThread();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println(" === SHUTTING DOWN GRACEFULLY ===");
-                CSCCConfiguration.keepRunning = false;
-                try {
-                    mainThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }));
-        }
+        final Thread mainThread = Thread.currentThread();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println(" === SHUTTING DOWN GRACEFULLY ===");
+            CSCCConfiguration.keepRunning = false;
+            try {
+                mainThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
     private String readProgressFile(String modelOutputDir) {
@@ -203,7 +202,8 @@ public class RecommenderHelper {
         int zipTotal = getNumZips(zips);
         int zipCount = 0;
 
-        CompletionModel model = CompletionModel.fromDisk(modelDir);
+        IInvertedIndex diskIndex = new DiskBasedInvertedIndex(modelDir);
+        CompletionModel model = new CompletionModel(diskIndex);
         CompletionModelEval eval = new CompletionModelEval(model);
 
         for (String zip : zips) {

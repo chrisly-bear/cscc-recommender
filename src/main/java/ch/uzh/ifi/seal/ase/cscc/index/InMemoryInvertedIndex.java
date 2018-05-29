@@ -3,7 +3,6 @@ package ch.uzh.ifi.seal.ase.cscc.index;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -49,16 +48,6 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
     @Override
     IndexDocument deserializeIndexDocument(String docID) {
         return docsInRAMIndex.get(docID);
-    }
-
-    public void persistToDisk(String targetDir) throws IOException {
-        // TODO: persist Lucene in-memory index to disk
-        LOGGER.warning("Persistence not implemented!");
-    }
-
-    public void initializeFromDisk(String sourceDir) throws IOException {
-        // TODO: implement
-        LOGGER.warning("Persistence not implemented!");
     }
 
 }

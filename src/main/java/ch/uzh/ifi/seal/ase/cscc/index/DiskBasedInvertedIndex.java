@@ -253,22 +253,6 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
 
 
     /*
-      IInvertedIndex INTERFACE IMPLEMENTATIONS
-     */
-
-    public void persistToDisk(String targetDir) {
-        // empty implementation to conform to interface, index is persisted immediately
-        // when a new document is added to the index
-    }
-
-    public void initializeFromDisk(String sourceDir) {
-        // empty implementation to conform to interface
-        LOGGER.warning("Called initializeFromDisk method which does not do anything in " +
-                DiskBasedInvertedIndex.class.getSimpleName() + ". Consider removing the call to initializeFromDisk.");
-    }
-
-
-    /*
       FILE HANDLING METHODS
      */
 
