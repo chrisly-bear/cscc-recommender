@@ -14,9 +14,6 @@ import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import java.util.*;
 
 
-/**
- * Visitor that takes a body of statements into the visit method and returns a list of IndexDocuments
- */
 public class IndexDocumentExtractionVisitorNoList extends AbstractTraversingNodeVisitor<IInvertedIndex, Void> {
 
     private final ContextVisitor CONTEXT_VISITOR = new ContextVisitor();
