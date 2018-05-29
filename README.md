@@ -29,6 +29,7 @@ Add this to your dependencies in your pom.xml:
   <version>0.1</version>
 </dependency>
 ```
+
 ### Gradle Configuration
 
 Add this entry anywhere in your build.gradle file:
@@ -46,3 +47,7 @@ Add this to your dependencies in your build.gradle file:
 ```gradle
 compile 'ch.uzh.ifi.seal.ase:cscc:0.1'
 ```
+
+### License
+
+This project is licensed under the Apache License 2.0.
