@@ -29,3 +29,20 @@ Add this to your dependencies in your pom.xml:
   <version>0.1</version>
 </dependency>
 ```
+### Gradle Configuration
+
+Add this entry anywhere in your build.gradle file:
+
+```gradle
+repositories {
+    maven {
+        url "https://packagecloud.io/tstrass/cscc-recommender/maven2"
+    }
+}
+```
+
+Add this to your dependencies in your build.gradle file:
+
+```gradle
+compile 'ch.uzh.ifi.seal.ase:cscc:0.1'
+```
