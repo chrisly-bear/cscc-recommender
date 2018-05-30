@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
+import ch.uzh.ifi.seal.ase.cscc.testutils.TestUtils;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -19,6 +20,7 @@ public class InvertedIndexTest {
     private List<IndexDocument> docsToIndex = new LinkedList<>();
     private InMemoryInvertedIndex luceneIndexInMemory;
     private DiskBasedInvertedIndex luceneIndexDiskBased;
+    private DiskBasedInvertedIndex luceneIndexDiskBasedNoSQL;
 
     private IndexDocument receiverObj1 = new IndexDocument(null, "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
             "toLowerCase", "context"
@@ -40,30 +42,17 @@ public class InvertedIndexTest {
 
     @Before
     public void setUp() {
-
-        // create test docs
-        docsToIndex.add(new IndexDocument("methodCall", "java.util.List", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "this", "is", "an", "overall", "context"
-        )));
-        docsToIndex.add(new IndexDocument("flyAway", "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "toString", "new"
-        )));
-        docsToIndex.add(new IndexDocument("explode", "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "setTimer", "getTarget", "try"
-        )));
-        docsToIndex.add(new IndexDocument("identify", "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "context"
-        )));
-        docsToIndex.add(new IndexDocument("diveDeep", "org.entity.Submarine", new LinkedList<>(), Arrays.asList(
-                "equals", "toString", "pressureIsInSafeRange", "lookForFish", "getWaterTemperature"
-        )));
+        // create test documents
+        TestUtils.fillWithTestDocuments(docsToIndex);
 
         // create inverted index
         luceneIndexInMemory = new InMemoryInvertedIndex();
         luceneIndexDiskBased = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
+        luceneIndexDiskBasedNoSQL = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST, false);
         for (IndexDocument doc : docsToIndex) {
             luceneIndexInMemory.indexDocument(doc);
             luceneIndexDiskBased.indexDocument(doc);
+            luceneIndexDiskBasedNoSQL.indexDocument(doc);
         }
     }
 
@@ -74,14 +63,21 @@ public class InvertedIndexTest {
     }
 
     @Test
-    public void search_InMemoryInvertedIndex() throws IOException {
+    public void search_InMemoryInvertedIndex() {
         Set<IndexDocument> answers = luceneIndexInMemory.search(receiverObj1);
         makeAssertions(answers);
     }
 
     @Test
-    public void search_DiskBasedInvertedIndex () throws IOException {
+    public void search_DiskBasedInvertedIndex () {
         Set<IndexDocument> answers = luceneIndexDiskBased.search(receiverObj1);
+        makeAssertions(answers);
+        luceneIndexDiskBased.cleanUp();
+    }
+
+    @Test
+    public void search_DiskBasedInvertedIndexNoSQL () {
+        Set<IndexDocument> answers = luceneIndexDiskBasedNoSQL.search(receiverObj1);
         makeAssertions(answers);
     }
 

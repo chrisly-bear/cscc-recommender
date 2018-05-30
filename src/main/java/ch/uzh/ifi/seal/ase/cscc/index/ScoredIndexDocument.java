@@ -5,22 +5,19 @@ import java.util.List;
 /**
  * Same as IndexDocument, but has an additional fields 'score1' and 'score2' which can be useful for comparing and sorting IndexDocuments
  */
-public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
+public class ScoredIndexDocument extends IndexDocument implements Comparable<ScoredIndexDocument> {
 
-    private IndexDocument docWithoutScores;
     private double score1;
     private double score2;
 
     public ScoredIndexDocument(String methodCall, String type, List<String> lineContext, List<String> overallContext, double score1, double score2) {
-        this.docWithoutScores = new IndexDocument(methodCall, type, lineContext, overallContext);
+        super(methodCall, type, lineContext, overallContext);
         this.score1 = score1;
         this.score2 = score2;
     }
 
     public ScoredIndexDocument(IndexDocument doc, double score1, double score2) {
-        this.docWithoutScores = doc;
-        this.score1 = score1;
-        this.score2 = score2;
+        this(doc.getMethodCall(), doc.getType(), doc.getLineContext(), doc.getOverallContext(), score1, score2);
     }
 
     public double getScore1() {
@@ -37,7 +34,7 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
      * @return IndexDocument without the scores
      */
     public IndexDocument getIndexDocumentWithoutScores() {
-        return this.docWithoutScores;
+        return new IndexDocument(this.getId(), this.getMethodCall(), this.getType(), this.getLineContext(), this.getOverallContext(), this.getLineContextSimhash(), this.getOverallContextSimhash());
     }
 
     /**
@@ -62,60 +59,16 @@ public class ScoredIndexDocument implements Comparable<ScoredIndexDocument> {
         }
     }
 
-    /*
-      delegated IndexDocument methods
-     */
-
-    public long getOverallContextSimhash() {
-        return docWithoutScores.getOverallContextSimhash();
-    }
-
-    public List<String> getOverallContext() {
-        return docWithoutScores.getOverallContext();
-    }
-
-    public long getLineContextSimhash() {
-        return docWithoutScores.getLineContextSimhash();
-    }
-
-    public List<String> getLineContext() {
-        return docWithoutScores.getLineContext();
-    }
-
-    public int lineContextHammingDistanceToOther(ScoredIndexDocument other) {
-        return docWithoutScores.lineContextHammingDistanceToOther(other.getIndexDocumentWithoutScores());
-    }
-
-    public int overallContextHammingDistanceToOther(ScoredIndexDocument other) {
-        return docWithoutScores.overallContextHammingDistanceToOther(other.getIndexDocumentWithoutScores());
-    }
-
-    public String getMethodCall() {
-        return docWithoutScores.getMethodCall();
-    }
-
-    public String getType() {
-        return docWithoutScores.getType();
-    }
-
-    public double levenshteinDistanceLineContextToOther(ScoredIndexDocument other) {
-        return docWithoutScores.normalizedLevenshteinDistanceLineContextToOther(other.getIndexDocumentWithoutScores());
-    }
-
-    public double longestCommonSubsequenceOverallContextToOther(ScoredIndexDocument other) {
-        return docWithoutScores.normalizedLongestCommonSubsequenceLengthOverallContextToOther(other.getIndexDocumentWithoutScores());
-    }
-
     @Override
     public String toString() {
         return "ScoredIndexDocument{" +
-                "id='" + docWithoutScores.getId() + '\'' +
-                ", methodCall='" + docWithoutScores.getMethodCall() + '\'' +
-                ", type='" + docWithoutScores.getType() + '\'' +
-                ", lineContext=" + docWithoutScores.getLineContext() +
-                ", overallContext=" + docWithoutScores.getOverallContext() +
-                ", lineContextSimhash=" + docWithoutScores.getLineContextSimhash() +
-                ", overallContextSimhash=" + docWithoutScores.getOverallContextSimhash() +
+                "id='" + this.getId() + '\'' +
+                ", methodCall='" + this.getMethodCall() + '\'' +
+                ", type='" + this.getType() + '\'' +
+                ", lineContext=" + this.getLineContext() +
+                ", overallContext=" + this.getOverallContext() +
+                ", lineContextSimhash=" + this.getLineContextSimhash() +
+                ", overallContextSimhash=" + this.getOverallContextSimhash() +
                 ", score1=" + score1 +
                 ", score2=" + score2 +
                 '}';

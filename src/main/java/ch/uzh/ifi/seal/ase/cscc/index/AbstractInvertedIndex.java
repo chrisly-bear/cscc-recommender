@@ -71,7 +71,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         // StringField: no tokenization
         // TextField: tokenization
         for (String term : doc.getOverallContext()) {
-            luceneDoc.add(new StringField(OVERALL_CONTEXT_FIELD, term, Field.Store.YES));
+            luceneDoc.add(new StringField(OVERALL_CONTEXT_FIELD, term, Field.Store.NO));
         }
 //        w.addDocument(luceneDoc); // this will add duplicates to an existing index
         w.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
@@ -127,16 +127,5 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @return
      */
     abstract IndexDocument deserializeIndexDocument(String docID) throws IOException;
-
-    private static boolean luceneIndexExistsAndIsReadable(Directory indexDir) {
-        boolean existsAndIsReadable = false;
-        try {
-            DirectoryReader.open(indexDir);
-            existsAndIsReadable = true;
-        } catch (IOException e) {
-            // e.printStackTrace();
-        }
-        return existsAndIsReadable;
-    }
 
 }
