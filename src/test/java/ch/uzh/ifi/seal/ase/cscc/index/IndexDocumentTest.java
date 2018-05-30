@@ -160,4 +160,11 @@ public class IndexDocumentTest {
     public void identicalDocumentsMustBeEqual() {
         assertEquals(doc2, doc2_twin);
     }
+
+    @Test
+    public void toStringTest() {
+        String expected = "IndexDocument{id='69f823f36cc590f1ebb2006fbe3d5963802e54242af4fd14a7ca5921b7b5d860', methodCall='testMethod1', type='com.something.util.test.TestClass1', lineContext=[Juliet, Romeo], overallContext=[Lorem, adipiscing, amet, consectetur, dolor, elit, ipsum, sit], lineContextSimhash=7893838207193153156, overallContextSimhash=3742294180565081795}";
+        assertEquals(expected, doc1.toString());
+    }
+
 }
