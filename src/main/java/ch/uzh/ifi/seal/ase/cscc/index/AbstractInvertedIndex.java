@@ -64,7 +64,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @param doc
      * @throws IOException
      */
-    private void addDocToLuceneIndex(IndexWriter w, IndexDocument doc) throws IOException {
+    void addDocToLuceneIndex(IndexWriter w, IndexDocument doc) throws IOException {
         Document luceneDoc = new Document();
         luceneDoc.add(new StringField(DOC_ID_FIELD, doc.getId(), Field.Store.YES));
         // store all terms in the overall context as tokens in the index

@@ -10,10 +10,7 @@ import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEval;
-import ch.uzh.ifi.seal.ase.cscc.index.DiskBasedInvertedIndex;
-import ch.uzh.ifi.seal.ase.cscc.index.IInvertedIndex;
-import ch.uzh.ifi.seal.ase.cscc.index.InMemoryInvertedIndex;
-import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
+import ch.uzh.ifi.seal.ase.cscc.index.*;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
@@ -88,60 +85,76 @@ public class RecommenderHelper {
      * found in the modelOutputDir, training will pick up where it left off last time.
      * ATTENTION: You can only continue training on the same training data. This means the structure of the contextDir
      * must be the same (still contain the same zips) as last time.
+     *
      * @param modelOutputDir Directory where to store the learned model. Will create a subdirectory called 'CSCCInvertedIndex'.
      */
     public void trainModel(String modelOutputDir) {
 
         addShutdownHook();
 
-        String continueWithZip = readProgressFile(modelOutputDir);
+        String lastProcessedZip = readProgressFile(modelOutputDir);
 
         List<String> zips = IoHelper.findAllZips(contextsDir);
-        int zipTotal = getNumZips(zips);
-        int zipCount = 0;
 
-        IInvertedIndex diskIndex = new DiskBasedInvertedIndex(modelOutputDir);
+        IInvertedIndex diskIndex = new ParallelizedInvertedIndex(modelOutputDir);
         CompletionModel completionModel = new CompletionModel(diskIndex);
 
-        for (String zip : zips) {
+        int zipTotal = zips.size();
 
-            if (++zipCount > zipTotal || !CSCCConfiguration.keepRunning ) break;
+        int indexOfNextZipToProcess = 0;
 
-            if (continueWithZip != null && !continueWithZip.equals("")) {
-                if (!zip.equals(continueWithZip)) {
-                    continue;
-                } else {
-                    LOGGER.info("Found previous indexing state. Continuing indexing with zip " +
-                                    zipCount + "/" + zipTotal + "(" + continueWithZip + ")");
-                    continueWithZip = null; // reset variable, otherwise we won't get to the remaining zips
-                    continue; // progress file stores the last fully processed zip file -> continue with next one
+        if (zips.size() > 0) {
+
+            if (zips.contains(lastProcessedZip)) {
+
+                int indexOfLastProcessedZip = zips.indexOf(lastProcessedZip);
+
+                indexOfNextZipToProcess = indexOfLastProcessedZip + 1;
+
+                LOGGER.info("Found previous indexing state. Continuing indexing with zip " +
+                        indexOfLastProcessedZip + "/" + zipTotal + "(" + lastProcessedZip + ")");
+
+            } else {
+
+                // Reaching this part of the code means we have to start training from scratch
+                LOGGER.info("Did not find previous indexing state. Starting training from beginning " +
+                        indexOfNextZipToProcess + "/" + zipTotal + "(" + zips.get(0) + ")");
+            }
+
+            // Get the list of zips we still have to process
+            List<String> zipsToDo = zips.subList(indexOfNextZipToProcess, zips.size());
+
+            for (String zip : zipsToDo) {
+
+                if (!CSCCConfiguration.keepRunning) break;
+
+                int indexOfCurrentZip = zips.indexOf(zip);
+
+                if (CSCCConfiguration.PRINT_PROGRESS) {
+                    double perc = 100 * indexOfCurrentZip + 1 / (double) zipTotal;
+                    System.out.printf("## %s, processing %s...\n(%d/%d, %.1f%% done)\n", new Date(), zip, indexOfCurrentZip + 1, zipTotal,
+                            perc);
                 }
-            }
 
-            if (CSCCConfiguration.PRINT_PROGRESS) {
-                double perc = 100 * zipCount / (double) zipTotal;
-                System.out.printf("## %s, processing %s...\n(%d/%d, %.1f%% done)\n", new Date(), zip, zipCount, zipTotal,
-                        perc);
-            }
+                try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
 
-            try (IReadingArchive ra = new ReadingArchive(new File(zip))) {
-
-                while (ra.hasNext() && CSCCConfiguration.keepRunning) {
-                    if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
-                        System.out.printf("."); // print '.' to indicate that a context is being processed
+                    while (ra.hasNext() && CSCCConfiguration.keepRunning) {
+                        if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                            System.out.printf("."); // print '.' to indicate that a context is being processed
+                        }
+                        Context ctx = ra.getNext(Context.class);
+                        completionModel.train(ctx);
                     }
-                    Context ctx = ra.getNext(Context.class);
-                    completionModel.train(ctx);
+                    ra.close();
+                    if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
+                        System.out.println();
+                    }
                 }
-                ra.close();
-                if (CSCCConfiguration.PRINT_PROGRESS_CONTEXTS) {
-                    System.out.println();
-                }
-            }
 
-            // only store progress if current zip file processing has not been interrupted
-            if (CSCCConfiguration.keepRunning) {
-                writeProgressFile(modelOutputDir, zip);
+                // only store progress if current zip file processing has not been interrupted
+                if (CSCCConfiguration.keepRunning) {
+                    writeProgressFile(modelOutputDir, zip);
+                }
             }
         }
 
@@ -348,7 +361,7 @@ public class RecommenderHelper {
     }
 
     private boolean zipIsInTestBucket(int zipNum, int testBucketNum, int bucketSize) {
-        int zipLower = bucketSize * (testBucketNum-1) + 1;
+        int zipLower = bucketSize * (testBucketNum - 1) + 1;
         int zipUpper = bucketSize * testBucketNum;
         return (zipLower <= zipNum && zipNum <= zipUpper);
     }
