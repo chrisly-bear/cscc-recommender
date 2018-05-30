@@ -21,10 +21,6 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
       CLASS & INSTANCE VARIABLES
      */
 
-    // true: we store IndexDocuments in SQLite database
-    // false: we serialize IndexDocuments to disk as files with .ser ending
-    private static final boolean USE_SQLITE = true;
-
     private static final String SQL_TABLE_NAME = "indexdocuments";
     private final Logger LOGGER = Logger.getLogger(DiskBasedInvertedIndex.class.getName());
 
@@ -39,18 +35,33 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     // connection to SQLite database
     private Connection dbConn;
 
+    // true: we store IndexDocuments in SQLite database
+    // false: we serialize IndexDocuments to disk as files with .ser ending
+    private boolean USE_SQLITE = true;
 
     /*
       CONSTRUCTOR METHODS
      */
 
     /**
-     * Constructor
+     * Constructor.
+     * Uses an SQLite database to store the IndexDocument objects.
      * @param indexDir directory in which the inverted index will be stored.
      */
     public DiskBasedInvertedIndex(String indexDir) {
+        this(indexDir, true);
+    }
+
+    /**
+     * Constructor
+     * @param indexDir directory in which the inverted index will be stored.
+     * @param useRelationalDatabase true: we store IndexDocuments in SQLite database,
+     *                              false: we serialize IndexDocuments to disk as files with .ser ending
+     */
+    public DiskBasedInvertedIndex(String indexDir, boolean useRelationalDatabase) {
         indexRootDir = indexDir + "/" + INDEX_ROOT_DIR_NAME;
         createDirectoryIfNotExists(new File(indexRootDir));
+        this.USE_SQLITE = useRelationalDatabase;
         if (USE_SQLITE) {
             openSQLConnection();
         }
