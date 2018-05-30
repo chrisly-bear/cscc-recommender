@@ -279,15 +279,4 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         }
     }
 
-    private void deleteDirectoryIfExists(String dir) {
-        File dirFile = new File(dir);
-        if (dirFile.exists()) {
-            System.out.println("'" + dir + "' directory already exists. Deleting it... ");
-            try {
-                FileUtils.deleteDirectory(dirFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
