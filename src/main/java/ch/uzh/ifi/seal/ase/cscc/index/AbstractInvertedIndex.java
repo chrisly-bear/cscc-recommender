@@ -128,15 +128,4 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      */
     abstract IndexDocument deserializeIndexDocument(String docID) throws IOException;
 
-    private static boolean luceneIndexExistsAndIsReadable(Directory indexDir) {
-        boolean existsAndIsReadable = false;
-        try {
-            DirectoryReader.open(indexDir);
-            existsAndIsReadable = true;
-        } catch (IOException e) {
-            // e.printStackTrace();
-        }
-        return existsAndIsReadable;
-    }
-
 }
