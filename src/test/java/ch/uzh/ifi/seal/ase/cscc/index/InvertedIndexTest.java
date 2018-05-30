@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.ase.cscc.index;
 
+import ch.uzh.ifi.seal.ase.cscc.testutils.TestUtils;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -41,23 +42,8 @@ public class InvertedIndexTest {
 
     @Before
     public void setUp() {
-
-        // create test docs
-        docsToIndex.add(new IndexDocument("methodCall", "java.util.List", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "this", "is", "an", "overall", "context"
-        )));
-        docsToIndex.add(new IndexDocument("flyAway", "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "toString", "new"
-        )));
-        docsToIndex.add(new IndexDocument("explode", "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "setTimer", "getTarget", "try"
-        )));
-        docsToIndex.add(new IndexDocument("identify", "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
-                "toLowerCase", "context"
-        )));
-        docsToIndex.add(new IndexDocument("diveDeep", "org.entity.Submarine", new LinkedList<>(), Arrays.asList(
-                "equals", "toString", "pressureIsInSafeRange", "lookForFish", "getWaterTemperature"
-        )));
+        // create test documents
+        TestUtils.fillWithTestDocuments(docsToIndex);
 
         // create inverted index
         luceneIndexInMemory = new InMemoryInvertedIndex();
