@@ -10,6 +10,8 @@ import static org.junit.Assert.assertEquals;
 
 public class ScoredIndexDocumentTest {
 
+    private IndexDocument emptyDoc = new IndexDocument("", "empty", new LinkedList<>(), new LinkedList<>());
+
     @Before
     public void setUp() {
     }
@@ -17,9 +19,9 @@ public class ScoredIndexDocumentTest {
     @Test
     public void sortingTestScore1() {
         List<ScoredIndexDocument> scoredIndexDocs = new LinkedList<>();
-        scoredIndexDocs.add(new ScoredIndexDocument(null, -1, 0));
-        scoredIndexDocs.add(new ScoredIndexDocument(null, -3, 0));
-        scoredIndexDocs.add(new ScoredIndexDocument(null, -2, 0));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, -1, 0));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, -3, 0));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, -2, 0));
         scoredIndexDocs.sort(null);
         String sortedString = "";
         for (int i = 0; i < scoredIndexDocs.size(); i++) {
@@ -32,11 +34,11 @@ public class ScoredIndexDocumentTest {
     @Test
     public void sortingTestScore1AndScore2() {
         List<ScoredIndexDocument> scoredIndexDocs = new LinkedList<>();
-        scoredIndexDocs.add(new ScoredIndexDocument(null, 2, 0.2));
-        scoredIndexDocs.add(new ScoredIndexDocument(null, 1, 0));
-        scoredIndexDocs.add(new ScoredIndexDocument(null, 2, 0.0));
-        scoredIndexDocs.add(new ScoredIndexDocument(null, 3, 0));
-        scoredIndexDocs.add(new ScoredIndexDocument(null, 2, 0.1));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, 2, 0.2));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, 1, 0));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, 2, 0.0));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, 3, 0));
+        scoredIndexDocs.add(new ScoredIndexDocument(emptyDoc, 2, 0.1));
         scoredIndexDocs.sort(null);
         String sortedString = "";
         for (int i = 0; i < scoredIndexDocs.size(); i++) {
