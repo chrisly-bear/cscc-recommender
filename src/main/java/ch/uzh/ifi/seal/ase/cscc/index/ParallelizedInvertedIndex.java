@@ -123,21 +123,32 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
      */
     @Override
     public void indexDocument(IndexDocument doc) {
+        // open a new db connection for each index task
+        try {
+            Connection dbConn = openSQLConnection();
+            dbConn.setAutoCommit(false);
+            if (ParallelizedInvertedIndex.this.isIndexed(dbConn, doc)) {
+            // do not put identical documents in index twice
+//            System.out.println("doc " + doc.getId() + " is already indexed");
+            dbConn.close(); // doc is already in index, we're done here. close db connection.
+            return;
+        }
+            serializeIndexDocument(dbConn, doc);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         executorService.execute(new Runnable() {
+            private int attempts = 0;
             @Override
             public void run() {
+                attempts++;
+                if (attempts > 50) {
+                    System.out.println("attempt: " + attempts + "\n" + this.toString());
+                }
                 try {
-                    // open a new db connection for each index task
-                    Connection dbConn = openSQLConnection();
-                    dbConn.setAutoCommit(false);
-                    if (ParallelizedInvertedIndex.this.isIndexed(dbConn, doc)) {
-                        // do not put identical documents in index twice
-//                        System.out.println("doc " + doc.getId() + " is already indexed");
-                        dbConn.close(); // doc is already in index, we're done here. close db connection.
-                        return;
-                    }
-
-                    serializeIndexDocument(dbConn, doc);
 
                     Directory indexDirectory = ParallelizedInvertedIndex.this.getIndexDirectory(doc);
                     IndexWriterConfig config = new IndexWriterConfig();
@@ -165,15 +176,9 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
                     e.printStackTrace();
                     executorService.shutdown();
                     System.exit(1); // exit on IOException
-                } catch (SQLException e) {
-                    if (e.getErrorCode() == 5) { // SQLITE_BUSY, i.e. there's another transaction which has a lock
-                        // Resubmit this task
-                        executorService.execute(this);
-                        System.out.println("SQLITE_BUSY encountered. Keeping task in queue. DocID = " + doc.getId());
-                    } else {
-                        System.out.println("SQLITE ERROR CODE: " + e.getErrorCode());
-                        e.printStackTrace();
-                    }
+                } catch (Throwable t) {
+                    LOGGER.severe("UNCAUGHT EXCEPTION");
+                    t.printStackTrace();
                 }
             }
         });
@@ -251,7 +256,14 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
         prepStmt.setString(5, serializeContext(doc.getOverallContext()));
         prepStmt.setLong(6, doc.getLineContextSimhash());
         prepStmt.setLong(7, doc.getOverallContextSimhash());
-        prepStmt.executeUpdate();
+        int rowAffected = prepStmt.executeUpdate();
+        if (rowAffected != 1) {
+            dbConn.rollback();
+            LOGGER.severe("NO ROWS AFFECTED. ROLLING BACK!");
+            throw new SQLException("No rows affected, rolling back!", null, 5);
+        } else {
+//            LOGGER.info("Doc " + doc.getId() + " successfully added to SQLite DB");
+        }
         dbConn.commit(); // end the transaction that we've started in the 'isIndexedInDB' call
         prepStmt.close();
         dbConn.close(); // if we are at this point there has not been any exception which means the transaction was successful. we can close the db connection.
