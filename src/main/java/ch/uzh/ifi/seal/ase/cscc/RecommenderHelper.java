@@ -131,7 +131,7 @@ public class RecommenderHelper {
                 int indexOfCurrentZip = zips.indexOf(zip);
 
                 if (CSCCConfiguration.PRINT_PROGRESS) {
-                    double perc = 100 * indexOfCurrentZip + 1 / (double) zipTotal;
+                    double perc = 100 * (indexOfCurrentZip + 1) / (double) zipTotal;
                     System.out.printf("## %s, processing %s...\n(%d/%d, %.1f%% done)\n", new Date(), zip, indexOfCurrentZip + 1, zipTotal,
                             perc);
                 }
