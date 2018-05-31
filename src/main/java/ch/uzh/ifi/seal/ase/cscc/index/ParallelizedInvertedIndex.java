@@ -16,10 +16,10 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
+
+import static java.lang.Thread.sleep;
 
 public class ParallelizedInvertedIndex implements IInvertedIndex {
 
@@ -46,7 +46,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
     // false: we serialize IndexDocuments to disk as files with .ser ending
     private boolean USE_SQLITE = true;
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(4);
+    ThreadPoolExecutor executorService = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
     private ConcurrentHashMap<Directory, IndexWriter> filePathToIndexWriter = new ConcurrentHashMap<>();
 
@@ -114,7 +114,19 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
      * Call this method when this instance is not used anymore. It closes the ExecuterService.
      */
     public void cleanUp() {
-        executorService.shutdown();
+
+        // if we do shutdown then no new tasks can be added to queue. this is a problem because the remaining docs
+        // (tasks) in the queue might still encounter a locked index and need to be re-added to queue several more times
+//        executorService.shutdown();
+        
+        while (executorService.getQueue().size() > 0) {
+            System.out.println("Queue size: " + executorService.getQueue().size());
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -167,11 +179,12 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
                         ParallelizedInvertedIndex.this.addDocToLuceneIndex(w, doc);
                         w.close();
                     }
+                    System.out.println(attempts + ": successfully indexed " + doc.getId());
                 } catch (LockObtainFailedException lockObtainFailedException) {
                     // there's a lock on the Lucene index
                     // Resubmit this task
                     executorService.execute(this);
-                    System.out.println(attempts + ": LockObtainFailedException encountered. Keeping task in queue. Doc Type = " + doc.getType());
+                    System.out.println(attempts + ": LockObtainFailedException encountered. Keeping task in queue. docID = " + doc.getId());
                 } catch (IOException e) {
                     e.printStackTrace();
                     executorService.shutdown();

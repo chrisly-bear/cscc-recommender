@@ -33,6 +33,10 @@ public class CompletionModel {
             System.out.println("Closing DiskBasedInvertedIndex cleanly...");
             DiskBasedInvertedIndex dbindex = (DiskBasedInvertedIndex) index;
             dbindex.cleanUp();
+        } else if (index instanceof ParallelizedInvertedIndex) {
+            System.out.println("Closing ParallelizedInvertedIndex cleanly...");
+            ParallelizedInvertedIndex pindex = (ParallelizedInvertedIndex) index;
+            pindex.cleanUp();
         }
     }
 
