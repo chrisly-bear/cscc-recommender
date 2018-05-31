@@ -11,14 +11,12 @@ public class Recommender {
     private List<IndexDocument> refinedCandidates;
     private List<ScoredIndexDocument> scoredCandidates;
     private List<IndexDocument> topThreeCandidates;
-    private IndexDocument receiverObj;
 
     /**
      * @param index       inverted index structure (model) with which to suggest code completions
      * @param receiverObj object, on which the code completion is called
      */
     public Recommender(IInvertedIndex index, IndexDocument receiverObj) {
-        this.receiverObj = receiverObj;
         baseCandidates = getBaseCandidates(index, receiverObj);
         refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
         scoredCandidates = sortRefindedCandidates(refinedCandidates, receiverObj);
