@@ -78,7 +78,7 @@ public class Recommender {
     private static List<IndexDocument> getTopThreeCandidates(List<ScoredIndexDocument> sortedRefinedScoredCandidates) {
         final int CANDIDATES_TO_SUGGEST = 3;
         // get the top three
-        sortedRefinedScoredCandidates = sortedRefinedScoredCandidates.subList(0, Math.min(CANDIDATES_TO_SUGGEST - 1,
+        sortedRefinedScoredCandidates = sortedRefinedScoredCandidates.subList(0, Math.min(CANDIDATES_TO_SUGGEST,
                 sortedRefinedScoredCandidates.size()));
         List<IndexDocument> sortedRefinedCandidates = new LinkedList<>();
         for (ScoredIndexDocument sid : sortedRefinedScoredCandidates) {
