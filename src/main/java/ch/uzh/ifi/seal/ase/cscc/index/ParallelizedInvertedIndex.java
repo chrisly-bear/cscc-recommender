@@ -171,7 +171,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
                     // there's a lock on the Lucene index
                     // Resubmit this task
                     executorService.execute(this);
-                    System.out.println("LockObtainFailedException encountered. Keeping task in queue. DocID = " + doc.getId());
+                    System.out.println(attempts + ": LockObtainFailedException encountered. Keeping task in queue. Doc Type = " + doc.getType());
                 } catch (IOException e) {
                     e.printStackTrace();
                     executorService.shutdown();
