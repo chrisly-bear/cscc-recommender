@@ -23,6 +23,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     private Directory indexDirectory;
     private IndexWriter indexWriter;
+    private IndexSearcher searcher;
 
     private void initializeDirectory() {
         try {
@@ -103,9 +104,6 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     public Set<IndexDocument> search(IndexDocument doc) {
         Set<IndexDocument> answers = new HashSet<>();
         try {
-            IndexReader reader = DirectoryReader.open(indexDirectory);
-            IndexSearcher searcher = new IndexSearcher(reader);
-
             BooleanQuery.Builder boolQueryBuilder = new BooleanQuery.Builder();
             Query queryForType = new TermQuery(new Term(TYPE_FIELD, doc.getType()));
             boolQueryBuilder.add(queryForType, BooleanClause.Occur.MUST);
@@ -168,12 +166,17 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     @Override
     public void startSearching() {
         initializeDirectory();
-        // TODO: open Lucene Searcher
+        try {
+            IndexReader reader = DirectoryReader.open(indexDirectory);
+            searcher = new IndexSearcher(reader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void finishSearching() {
-        // TODO: close Lucene Searcher
+        // nothing to do here
     }
 
 }
