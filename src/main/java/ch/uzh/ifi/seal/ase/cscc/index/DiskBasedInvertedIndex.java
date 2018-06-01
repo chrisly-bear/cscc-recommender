@@ -65,6 +65,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         if (USE_SQLITE) {
             openSQLConnection();
         }
+        super.initializeIndexDirectory();
     }
 
     private void openSQLConnection() {
@@ -186,9 +187,8 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     }
 
     @Override
-    Directory getIndexDirectory(IndexDocument doc) throws IOException {
-        String docType = doc.getType();
-        String luceneIndexDirPath = indexRootDir + "/" + INVERTED_INDEX_STRUCTURES_DIR_NAME + "/" + docType;
+    Directory getIndexDirectory() throws IOException {
+        String luceneIndexDirPath = indexRootDir + "/" + INVERTED_INDEX_STRUCTURES_DIR_NAME;
         FSDirectory fileDirectory = FSDirectory.open(new File(luceneIndexDirPath).toPath());
         return fileDirectory;
     }

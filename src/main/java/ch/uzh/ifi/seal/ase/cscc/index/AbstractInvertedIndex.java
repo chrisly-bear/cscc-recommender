@@ -15,8 +15,20 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     // fields for indexing in Lucene index
     private static final String DOC_ID_FIELD = "docID";
     private static final String OVERALL_CONTEXT_FIELD = "overallContext";
+    private static final String TYPE_FIELD = "type";
     private StringField docIdField = new StringField(DOC_ID_FIELD, "", Field.Store.YES);
     private StringField overallContextField = new StringField(OVERALL_CONTEXT_FIELD, "", Field.Store.NO);
+    private StringField typeField = new StringField(TYPE_FIELD, "", Field.Store.NO);
+
+    private Directory indexDirectory;
+
+    void initializeIndexDirectory() {
+        try {
+            this.indexDirectory = getIndexDirectory();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Puts an IndexDocument in the index.
@@ -30,7 +42,6 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         }
         try {
             serializeIndexDocument(doc);
-            Directory indexDirectory = getIndexDirectory(doc);
             IndexWriterConfig config = new IndexWriterConfig();
             // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
@@ -57,7 +68,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @return
      * @throws IOException
      */
-    abstract Directory getIndexDirectory(IndexDocument doc) throws IOException;
+    abstract Directory getIndexDirectory() throws IOException;
 
     /**
      * Stores docID and the overall context in the Lucene index. The overall context will be what we search for at
@@ -70,6 +81,8 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         Document luceneDoc = new Document();
         docIdField.setStringValue(doc.getId());
         luceneDoc.add(docIdField);
+        typeField.setStringValue(doc.getType());
+        luceneDoc.add(typeField);
         // store all terms in the overall context as tokens in the index
         // StringField: no tokenization
         // TextField: tokenization
@@ -91,17 +104,17 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      */
     public Set<IndexDocument> search(IndexDocument doc) {
         Set<IndexDocument> answers = new HashSet<>();
-        Directory indexDirectory;
         try {
-            indexDirectory = getIndexDirectory(doc);
             IndexReader reader = DirectoryReader.open(indexDirectory);
             IndexSearcher searcher = new IndexSearcher(reader);
 
             BooleanQuery.Builder boolQueryBuilder = new BooleanQuery.Builder();
+            Query queryForType = new TermQuery(new Term(TYPE_FIELD, doc.getType()));
+            boolQueryBuilder.add(queryForType, BooleanClause.Occur.MUST);
             for (String termStr : doc.getOverallContext()) {
                 Term term = new Term(OVERALL_CONTEXT_FIELD, termStr);
-                Query query = new TermQuery(term);
-                boolQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
+                Query queryForOverallContext = new TermQuery(term);
+                boolQueryBuilder.add(queryForOverallContext, BooleanClause.Occur.SHOULD);
             }
             Query boolQuery = boolQueryBuilder.build();
             TopDocs docs = searcher.search(boolQuery, Integer.MAX_VALUE); // TODO: not sure if Integer.MAX_VALUE is such a good idea. There is probably a reason why Lucene does not offer to retrieve all matches at once.
