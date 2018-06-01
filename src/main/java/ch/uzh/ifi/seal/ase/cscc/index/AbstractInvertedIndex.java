@@ -122,6 +122,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         Set<IndexDocument> answers = new HashSet<>();
         try {
             BooleanQuery.Builder boolQueryBuilder = new BooleanQuery.Builder();
+            boolQueryBuilder.setMinimumNumberShouldMatch(1);
             Query queryForType = new TermQuery(new Term(TYPE_FIELD, doc.getType()));
             boolQueryBuilder.add(queryForType, BooleanClause.Occur.MUST);
             for (String termStr : doc.getOverallContext()) {
