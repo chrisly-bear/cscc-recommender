@@ -6,6 +6,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.LockObtainFailedException;
 
 import java.io.*;
 import java.util.*;
@@ -33,6 +34,9 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
             // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
             indexWriter = new IndexWriter(indexDirectory, config);
+        } catch (LockObtainFailedException e) {
+            e.printStackTrace();
+            System.exit(1); // can't write to indexDirectory, abort
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -67,7 +71,6 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     /**
      * Returns either the RAM directory (if index is in-memory index) or the FSDirectory (if index is disk index).
-     * @param doc
      * @return
      * @throws IOException
      */
@@ -76,7 +79,6 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     /**
      * Stores docID and the overall context in the Lucene index. The overall context will be what we search for at
      * retrieval time, the docID will be the result of the retrieval.
-     * @param w
      * @param doc
      * @throws IOException
      */
@@ -95,6 +97,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         }
 //        indexWriter.addDocument(luceneDoc); // this will add duplicates to an existing index
         indexWriter.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
+        indexWriter.commit();
     }
 
     /**
