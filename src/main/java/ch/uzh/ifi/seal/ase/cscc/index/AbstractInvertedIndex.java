@@ -18,7 +18,6 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     private static final String OVERALL_CONTEXT_FIELD = "overallContext";
     private static final String TYPE_FIELD = "type";
     private StringField docIdField = new StringField(DOC_ID_FIELD, "", Field.Store.YES);
-    private StringField overallContextField = new StringField(OVERALL_CONTEXT_FIELD, "", Field.Store.NO);
     private StringField typeField = new StringField(TYPE_FIELD, "", Field.Store.NO);
 
     private Directory indexDirectory;
@@ -86,7 +85,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         // StringField: no tokenization
         // TextField: tokenization
         for (String term : doc.getOverallContext()) {
-            overallContextField.setStringValue(term);
+            StringField overallContextField = new StringField(OVERALL_CONTEXT_FIELD, term, Field.Store.NO);
             luceneDoc.add(overallContextField);
         }
 //        indexWriter.addDocument(luceneDoc); // this will add duplicates to an existing index
