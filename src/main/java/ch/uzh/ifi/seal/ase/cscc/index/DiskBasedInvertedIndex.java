@@ -44,7 +44,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
      */
 
     /**
-     * Constructor.
+     * Creates a new {@link DiskBasedInvertedIndex} using the given index directory to store the index
      * Uses an SQLite database to store the IndexDocument objects.
      * @param indexDir directory in which the inverted index will be stored.
      */
@@ -53,7 +53,8 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     }
 
     /**
-     * Constructor
+     * Creates a new {@link DiskBasedInvertedIndex} using the given index directory to store the index. Uses an
+     * SQLite database based on wether {@code useRelationalDatabase} is true or false.
      * @param indexDir directory in which the inverted index will be stored.
      * @param useRelationalDatabase true: we store IndexDocuments in SQLite database,
      *                              false: we serialize IndexDocuments to disk as files with .ser ending
@@ -97,7 +98,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     }
 
     /**
-     * Call this method when this instance is not used anymore. It closes the SQLite connection.
+     * Clean up method, closes the SQLite connection if this index used a SQLite database
      */
     public void cleanUp() {
         if (USE_SQLITE && dbConn != null) {
