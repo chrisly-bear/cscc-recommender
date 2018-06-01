@@ -26,6 +26,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Helper class exposing methods to easily use the model and evaluate it
+ */
 public class RecommenderHelper {
 
     private final Logger LOGGER = Logger.getLogger(RecommenderHelper.class.getName());
