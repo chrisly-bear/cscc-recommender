@@ -25,7 +25,9 @@ public class Recommender {
 
     private static List<IndexDocument> getBaseCandidates(IInvertedIndex index, IndexDocument receiverObj) {
         List<IndexDocument> baseCandidates = new LinkedList<>();
+        index.startSearching();
         baseCandidates.addAll(index.search(receiverObj));
+        index.finishSearching();
         return baseCandidates;
     }
 

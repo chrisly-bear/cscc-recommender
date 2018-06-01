@@ -18,10 +18,6 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
     private Map<String, IndexDocument> docsInRAMIndex = new HashMap<>();
     private RAMDirectory directory = new RAMDirectory();
 
-    public InMemoryInvertedIndex() {
-        super.initialize();
-    }
-
     @Override
     boolean isIndexed(IndexDocument doc) {
         return docsInRAMIndex.containsKey(doc.getId());

@@ -62,23 +62,6 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         indexRootDir = indexDir + "/" + INDEX_ROOT_DIR_NAME;
         createDirectoryIfNotExists(new File(indexRootDir));
         this.USE_SQLITE = useRelationalDatabase;
-        if (USE_SQLITE) {
-            openSQLConnection();
-        }
-        super.initialize();
-    }
-
-    private void openSQLConnection() {
-        String sqlUrl = "jdbc:sqlite:" + indexRootDir + "/" + SERIALIZED_INDEX_DOCUMENTS_SQLITE_FILE_NAME;
-        try {
-            dbConn = DriverManager.getConnection(sqlUrl);
-            if (dbConn != null) {
-                createDBSchemaIfNotExists(dbConn);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.exit(1); // exit on exception
-        }
     }
 
     private void createDBSchemaIfNotExists(Connection sqlConnection) throws SQLException {
@@ -97,12 +80,53 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         stmt.close();
     }
 
-    /**
-     * Call this method when this instance is not used anymore. It closes the SQLite connection.
-     */
     @Override
-    public void cleanUp() {
-        super.cleanUp();
+    public void startIndexing() {
+        super.startIndexing();
+        if (USE_SQLITE) {
+            openSQLConnection();
+            try {
+                createDBSchemaIfNotExists(dbConn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
+
+    private void openSQLConnection() {
+        String sqlUrl = "jdbc:sqlite:" + indexRootDir + "/" + SERIALIZED_INDEX_DOCUMENTS_SQLITE_FILE_NAME;
+        try {
+            dbConn = DriverManager.getConnection(sqlUrl);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.exit(1); // exit on exception
+        }
+    }
+
+    @Override
+    public void finishIndexing() {
+        super.finishIndexing();
+        if (USE_SQLITE && dbConn != null) {
+            try {
+                dbConn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void startSearching() {
+        super.startSearching();
+        if (USE_SQLITE) {
+            openSQLConnection();
+        }
+    }
+
+    @Override
+    public void finishSearching() {
+        super.finishSearching();
         if (USE_SQLITE && dbConn != null) {
             try {
                 dbConn.close();

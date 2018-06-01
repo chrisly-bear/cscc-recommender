@@ -38,9 +38,11 @@ public class InvertedIndexTest {
     }
 
     private void putDocumentsInIndex(IInvertedIndex index, Collection<IndexDocument> documents) {
+        index.startIndexing();
         for (IndexDocument doc : documents) {
             index.indexDocument(doc);
         }
+        index.finishIndexing();
     }
 
     @Before
@@ -59,27 +61,33 @@ public class InvertedIndexTest {
     public void search_InMemoryInvertedIndex() {
         IInvertedIndex luceneIndexInMemory = new InMemoryInvertedIndex();
         putDocumentsInIndex(luceneIndexInMemory, docsToIndex);
+        luceneIndexInMemory.startSearching();
         Set<IndexDocument> answers = luceneIndexInMemory.search(receiverObj1);
+        luceneIndexInMemory.finishSearching();
         makeAssertions(answers);
-        luceneIndexInMemory.cleanUp();
+        luceneIndexInMemory.finishIndexing();
     }
 
     @Test
     public void search_DiskBasedInvertedIndex () {
         IInvertedIndex luceneIndexDiskBased = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
         putDocumentsInIndex(luceneIndexDiskBased, docsToIndex);
+        luceneIndexDiskBased.startSearching();
         Set<IndexDocument> answers = luceneIndexDiskBased.search(receiverObj1);
+        luceneIndexDiskBased.finishSearching();
         makeAssertions(answers);
-        luceneIndexDiskBased.cleanUp();
+        luceneIndexDiskBased.finishIndexing();
     }
 
     @Test
     public void search_DiskBasedInvertedIndexNoSQL () {
         IInvertedIndex luceneIndexDiskBasedNoSQL = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST, false);
         putDocumentsInIndex(luceneIndexDiskBasedNoSQL, docsToIndex);
+        luceneIndexDiskBasedNoSQL.startSearching();
         Set<IndexDocument> answers = luceneIndexDiskBasedNoSQL.search(receiverObj1);
+        luceneIndexDiskBasedNoSQL.finishSearching();
         makeAssertions(answers);
-        luceneIndexDiskBasedNoSQL.cleanUp();
+        luceneIndexDiskBasedNoSQL.finishIndexing();
     }
 
     private void makeAssertions(Set<IndexDocument> answers) {

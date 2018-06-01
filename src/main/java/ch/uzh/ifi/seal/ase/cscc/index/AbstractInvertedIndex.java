@@ -24,16 +24,9 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     private Directory indexDirectory;
     private IndexWriter indexWriter;
 
-    /**
-     * Make sure to call this method in the constructor of the subclasses!
-     */
-    void initialize() {
+    private void initializeDirectory() {
         try {
             indexDirectory = getIndexDirectory();
-            IndexWriterConfig config = new IndexWriterConfig();
-            // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
-            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-            indexWriter = new IndexWriter(indexDirectory, config);
         } catch (LockObtainFailedException e) {
             e.printStackTrace();
             System.exit(1); // can't write to indexDirectory, abort
@@ -97,7 +90,6 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         }
 //        indexWriter.addDocument(luceneDoc); // this will add duplicates to an existing index
         indexWriter.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
-        indexWriter.commit();
     }
 
     /**
@@ -152,12 +144,36 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     abstract IndexDocument deserializeIndexDocument(String docID) throws IOException;
 
     @Override
-    public void cleanUp() {
+    public void startIndexing() {
+        initializeDirectory();
+        IndexWriterConfig config = new IndexWriterConfig();
+        // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
+        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+        try {
+            indexWriter = new IndexWriter(indexDirectory, config);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void finishIndexing() {
         try {
             indexWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void startSearching() {
+        initializeDirectory();
+        // TODO: open Lucene Searcher
+    }
+
+    @Override
+    public void finishSearching() {
+        // TODO: close Lucene Searcher
     }
 
 }

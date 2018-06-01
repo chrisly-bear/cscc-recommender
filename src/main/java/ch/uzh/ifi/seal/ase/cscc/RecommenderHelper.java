@@ -124,6 +124,8 @@ public class RecommenderHelper {
             // Get the list of zips we still have to process
             List<String> zipsToDo = zips.subList(indexOfNextZipToProcess, zips.size());
 
+            completionModel.startTraining();
+
             for (String zip : zipsToDo) {
 
                 if (!CSCCConfiguration.keepRunning) break;
@@ -156,10 +158,8 @@ public class RecommenderHelper {
                     writeProgressFile(modelOutputDir, zip);
                 }
             }
+            completionModel.finishTraining();
         }
-
-        // close database connection
-        completionModel.cleanUp();
     }
 
     /**
@@ -328,6 +328,8 @@ public class RecommenderHelper {
         int zipCount = 0;
         int zipCountInBucket = 0;
 
+        completionModel.startTraining();
+
         for (String zip : zips) {
 
             if (++zipCount > zipTotal) break;
@@ -358,6 +360,7 @@ public class RecommenderHelper {
                 }
             }
         }
+        completionModel.finishTraining();
     }
 
     private boolean zipIsInTestBucket(int zipNum, int testBucketNum, int bucketSize) {
@@ -430,9 +433,6 @@ public class RecommenderHelper {
         float precision = eval.getPrecision();
         float recall = eval.getRecall();
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", precision, recall);
-
-        // close database connection
-        completionModel.cleanUp();
 
         return new float[] {precision, recall};
     }

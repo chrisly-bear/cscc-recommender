@@ -110,11 +110,16 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
         stmt.close();
     }
 
+    @Override
+    public void startIndexing() {
+        LOGGER.warning("METHOD NOT IMPLEMENTED!");
+    }
+
     /**
      * Call this method when this instance is not used anymore. It closes the ExecuterService.
      */
     @Override
-    public void cleanUp() {
+    public void finishIndexing() {
 
         // if we do shutdown then no new tasks can be added to queue. this is a problem because the remaining docs
         // (tasks) in the queue might still encounter a locked index and need to be re-added to queue several more times
@@ -128,6 +133,17 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
                 e.printStackTrace();
             }
         }
+
+    }
+
+    @Override
+    public void startSearching() {
+        LOGGER.warning("METHOD NOT IMPLEMENTED!");
+    }
+
+    @Override
+    public void finishSearching() {
+        LOGGER.warning("METHOD NOT IMPLEMENTED!");
     }
 
     /**
