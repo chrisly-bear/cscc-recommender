@@ -34,21 +34,6 @@ public class CompletionModel {
         sst.accept(indexDocumentExtractionVisitor, index);
     }
 
-    /**
-     * Call clean up methods on the index that was used to train the model
-     */
-    public void cleanUp() {
-        if (index instanceof DiskBasedInvertedIndex) {
-            System.out.println(String.format("Closing %s cleanly...", index.getClass().getName()));
-            DiskBasedInvertedIndex dbindex = (DiskBasedInvertedIndex) index;
-            dbindex.cleanUp();
-        } else if (index instanceof ParallelizedInvertedIndex) {
-            System.out.println("Closing ParallelizedInvertedIndex cleanly...");
-            ParallelizedInvertedIndex pindex = (ParallelizedInvertedIndex) index;
-            pindex.cleanUp();
-        }
-    }
-
     public void startTraining() {
         index.startIndexing();
     }
