@@ -111,14 +111,19 @@ public class RecommenderHelper {
 
                 indexOfNextZipToProcess = indexOfLastProcessedZip + 1;
 
+                if (indexOfNextZipToProcess >= zips.size()) {
+                    LOGGER.info("No more zips to process.");
+                    return;
+                }
+
                 LOGGER.info("Found previous indexing state. Continuing indexing with zip " +
-                        indexOfLastProcessedZip + "/" + zipTotal + "(" + lastProcessedZip + ")");
+                        (indexOfNextZipToProcess + 1) + "/" + zipTotal + "(" + zips.get(indexOfNextZipToProcess) + ")");
 
             } else {
 
                 // Reaching this part of the code means we have to start training from scratch
                 LOGGER.info("Did not find previous indexing state. Starting training from beginning " +
-                        indexOfNextZipToProcess + "/" + zipTotal + "(" + zips.get(0) + ")");
+                        (indexOfNextZipToProcess + 1) + "/" + zipTotal + "(" + zips.get(0) + ")");
             }
 
             // Get the list of zips we still have to process
