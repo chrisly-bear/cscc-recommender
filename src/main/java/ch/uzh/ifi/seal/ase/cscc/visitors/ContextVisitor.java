@@ -12,6 +12,10 @@ import cc.kave.commons.model.ssts.statements.*;
 
 import java.util.Set;
 
+/**
+ * Visitor implementing the logic to collect the line and the overall context information from a KaVe context in order
+ * to construct an {@link ch.uzh.ifi.seal.ase.cscc.index.IndexDocument}
+ */
 public class ContextVisitor extends AbstractTraversingNodeVisitor<Set<String>, Void> {
     @Override
     public Void visit(IVariableDeclaration stmt, Set<String> overallContext) {

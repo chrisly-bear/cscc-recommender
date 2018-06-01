@@ -13,7 +13,9 @@ import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 
 import java.util.*;
 
-
+/**
+ * Visitor that creates a new IndexDocument and directly indexes it using the given index
+ */
 public class IndexDocumentExtractionVisitorNoList extends AbstractTraversingNodeVisitor<IInvertedIndex, Void> {
 
     private final ContextVisitor CONTEXT_VISITOR = new ContextVisitor();

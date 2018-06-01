@@ -14,6 +14,10 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.*;
 
+/**
+ * Recommender class implementing the {@link ICallsRecommender} interface and holding candidate lists as
+ * described in the paper
+ */
 public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
 
     private final IInvertedIndex index;
@@ -22,6 +26,8 @@ public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
     private List<ScoredIndexDocument> scoredCandidates;
 
     /**
+     * Creates a new KaveRecommender instance using the given index as the underlying model
+     *
      * @param index       inverted index structure (model) with which to suggest code completions
      */
     public KaVeRecommender(IInvertedIndex index) {

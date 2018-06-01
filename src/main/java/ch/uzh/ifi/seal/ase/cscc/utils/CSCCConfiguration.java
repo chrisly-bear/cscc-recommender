@@ -1,5 +1,8 @@
 package ch.uzh.ifi.seal.ase.cscc.utils;
 
+/**
+ * Class holding various configuration variables
+ */
 public class CSCCConfiguration {
 
     // Location of the KaVE dataset
