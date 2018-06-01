@@ -14,7 +14,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.*;
 
-public class KaVERecommender implements ICallsRecommender<IndexDocument> {
+public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
 
     private final IInvertedIndex index;
     private List<IndexDocument> baseCandidates;
@@ -24,7 +24,7 @@ public class KaVERecommender implements ICallsRecommender<IndexDocument> {
     /**
      * @param index       inverted index structure (model) with which to suggest code completions
      */
-    public KaVERecommender(IInvertedIndex index) {
+    public KaVeRecommender(IInvertedIndex index) {
         this.index = index;
     }
 
@@ -162,7 +162,7 @@ public class KaVERecommender implements ICallsRecommender<IndexDocument> {
     /**
      * Query proposals by providing a context and the proposals given by the IDE.
      *
-     * NOTE 1: Same as {@link ch.uzh.ifi.seal.ase.cscc.index.KaVERecommender#query(Context)}. The IDE proposals are
+     * NOTE 1: Same as {@link KaVeRecommender#query(Context)}. The IDE proposals are
      *         ignored.
      *
      * NOTE 2: Since the CSCC algorithm works on single receiver objects of one specific type and not entire

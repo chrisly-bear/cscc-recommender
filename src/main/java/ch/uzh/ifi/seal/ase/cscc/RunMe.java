@@ -49,9 +49,9 @@ public class RunMe {
         System.out.println("Suggested methods (CSCC): " + csccCompletion);
 
         /*
-         * Or if you want to work with KaVE contexts, the KaVERecommender implements the ICallsRecommender interface:
+         * Or if you want to work with KaVE contexts, the KaVeRecommender implements the ICallsRecommender interface:
          */
-        KaVERecommender kaveRecommender = new KaVERecommender(index);
+        KaVeRecommender kaveRecommender = new KaVeRecommender(index);
         Set<Tuple<IMethodName, Double>> kaveCompletion = kaveRecommender.query(context);
         System.out.println("Suggested methods (KaVE): " + kaveCompletion);
 //        System.out.println("Size of model in bytes: " + kaveRecommender.getSize());
