@@ -15,6 +15,8 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     // fields for indexing in Lucene index
     private static final String DOC_ID_FIELD = "docID";
     private static final String OVERALL_CONTEXT_FIELD = "overallContext";
+    private StringField docIdField = new StringField(DOC_ID_FIELD, "", Field.Store.YES);
+    private StringField overallContextField = new StringField(OVERALL_CONTEXT_FIELD, "", Field.Store.NO);
 
     /**
      * Puts an IndexDocument in the index.
@@ -66,12 +68,14 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      */
     void addDocToLuceneIndex(IndexWriter w, IndexDocument doc) throws IOException {
         Document luceneDoc = new Document();
-        luceneDoc.add(new StringField(DOC_ID_FIELD, doc.getId(), Field.Store.YES));
+        docIdField.setStringValue(doc.getId());
+        luceneDoc.add(docIdField);
         // store all terms in the overall context as tokens in the index
         // StringField: no tokenization
         // TextField: tokenization
         for (String term : doc.getOverallContext()) {
-            luceneDoc.add(new StringField(OVERALL_CONTEXT_FIELD, term, Field.Store.NO));
+            overallContextField.setStringValue(term);
+            luceneDoc.add(overallContextField);
         }
 //        w.addDocument(luceneDoc); // this will add duplicates to an existing index
         w.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
