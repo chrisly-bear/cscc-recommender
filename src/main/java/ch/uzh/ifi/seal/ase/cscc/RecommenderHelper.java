@@ -9,7 +9,7 @@ import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
-import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEval;
+import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEvaluator;
 import ch.uzh.ifi.seal.ase.cscc.index.*;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
@@ -217,7 +217,7 @@ public class RecommenderHelper {
 
         IInvertedIndex diskIndex = new DiskBasedInvertedIndex(modelDir);
         CompletionModel model = new CompletionModel(diskIndex);
-        CompletionModelEval eval = new CompletionModelEval(model);
+        CompletionModelEvaluator eval = new CompletionModelEvaluator(model);
 
         for (String zip : zips) {
 
@@ -379,7 +379,7 @@ public class RecommenderHelper {
         int zipCount = 0;
         int zipCountInBucket = 0;
 
-        CompletionModelEval eval = new CompletionModelEval(completionModel);
+        CompletionModelEvaluator eval = new CompletionModelEvaluator(completionModel);
 
         for (String zip : zips) {
 
