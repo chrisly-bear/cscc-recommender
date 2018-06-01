@@ -30,8 +30,8 @@ public class KaVERecommender implements ICallsRecommender<IndexDocument> {
 
     private void processQuery(IndexDocument receiverObj) {
         baseCandidates = getBaseCandidates(index, receiverObj);
-        refinedCandidates = getRefindedCandidates(baseCandidates, receiverObj);
-        scoredCandidates = sortRefindedCandidates(refinedCandidates, receiverObj);
+        refinedCandidates = getRefinedCandidates(baseCandidates, receiverObj);
+        scoredCandidates = sortRefinedCandidates(refinedCandidates, receiverObj);
     }
 
     private static List<IndexDocument> getBaseCandidates(IInvertedIndex index, IndexDocument receiverObj) {
@@ -40,7 +40,7 @@ public class KaVERecommender implements ICallsRecommender<IndexDocument> {
         return baseCandidates;
     }
 
-    private static List<IndexDocument> getRefindedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
+    private static List<IndexDocument> getRefinedCandidates(List<IndexDocument> baseCandidates, IndexDocument receiverObj) {
         int switchToLineContextThreshold = 30; // TODO: this threshold was picked at random and was never tested (maybe a good value is mentioned in the paper?)
         int k = 200;
 
@@ -63,7 +63,7 @@ public class KaVERecommender implements ICallsRecommender<IndexDocument> {
         return refinedCandidates;
     }
 
-    private static List<ScoredIndexDocument> sortRefindedCandidates(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
+    private static List<ScoredIndexDocument> sortRefinedCandidates(List<IndexDocument> refinedCandidates, IndexDocument receiverObj) {
         double filteringThreshold = 0.30;
 
         List<ScoredIndexDocument> sortedRefinedScoredCandidates = new LinkedList<>();
