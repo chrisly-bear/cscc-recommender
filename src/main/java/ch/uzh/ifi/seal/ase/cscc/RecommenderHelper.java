@@ -111,18 +111,25 @@ public class RecommenderHelper {
 
                 indexOfNextZipToProcess = indexOfLastProcessedZip + 1;
 
+                if (indexOfNextZipToProcess >= zips.size()) {
+                    LOGGER.info("No more zips to process.");
+                    return;
+                }
+
                 LOGGER.info("Found previous indexing state. Continuing indexing with zip " +
-                        indexOfLastProcessedZip + "/" + zipTotal + "(" + lastProcessedZip + ")");
+                        (indexOfNextZipToProcess + 1) + "/" + zipTotal + "(" + zips.get(indexOfNextZipToProcess) + ")");
 
             } else {
 
                 // Reaching this part of the code means we have to start training from scratch
                 LOGGER.info("Did not find previous indexing state. Starting training from beginning " +
-                        indexOfNextZipToProcess + "/" + zipTotal + "(" + zips.get(0) + ")");
+                        (indexOfNextZipToProcess + 1) + "/" + zipTotal + "(" + zips.get(0) + ")");
             }
 
             // Get the list of zips we still have to process
             List<String> zipsToDo = zips.subList(indexOfNextZipToProcess, zips.size());
+
+            completionModel.startTraining();
 
             for (String zip : zipsToDo) {
 
@@ -156,10 +163,8 @@ public class RecommenderHelper {
                     writeProgressFile(modelOutputDir, zip);
                 }
             }
+            completionModel.finishTraining();
         }
-
-        // close database connection
-        completionModel.cleanUp();
     }
 
     /**
@@ -328,6 +333,8 @@ public class RecommenderHelper {
         int zipCount = 0;
         int zipCountInBucket = 0;
 
+        completionModel.startTraining();
+
         for (String zip : zips) {
 
             if (++zipCount > zipTotal) break;
@@ -358,6 +365,7 @@ public class RecommenderHelper {
                 }
             }
         }
+        completionModel.finishTraining();
     }
 
     private boolean zipIsInTestBucket(int zipNum, int testBucketNum, int bucketSize) {
@@ -430,9 +438,6 @@ public class RecommenderHelper {
         float precision = eval.getPrecision();
         float recall = eval.getRecall();
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", precision, recall);
-
-        // close database connection
-        completionModel.cleanUp();
 
         return new float[] {precision, recall};
     }

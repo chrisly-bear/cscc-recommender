@@ -5,7 +5,6 @@ import org.apache.lucene.store.RAMDirectory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * In-memory index.
@@ -15,12 +14,9 @@ import java.util.logging.Logger;
  */
 public class InMemoryInvertedIndex extends AbstractInvertedIndex {
 
-    private final Logger LOGGER = Logger.getLogger(InMemoryInvertedIndex.class.getName());
-
-    // <type, Lucene RAM directory>
-    private Map<String, RAMDirectory> ramDirectories = new HashMap<>();
     // <docID, IndexDocument>
     private Map<String, IndexDocument> docsInRAMIndex = new HashMap<>();
+    private RAMDirectory directory = new RAMDirectory();
 
     @Override
     boolean isIndexed(IndexDocument doc) {
@@ -34,15 +30,8 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
     }
 
     @Override
-    Directory getIndexDirectory(IndexDocument doc) {
-        String docType = doc.getType();
-        RAMDirectory ramDirForGivenType = ramDirectories.get(docType);
-        if (ramDirForGivenType == null) {
-            // RAMDirectory for this type does not exist yet
-            ramDirForGivenType = new RAMDirectory();
-            ramDirectories.put(docType, ramDirForGivenType);
-        }
-        return ramDirForGivenType;
+    Directory getIndexDirectory() {
+        return directory;
     }
 
     @Override

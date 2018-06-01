@@ -63,22 +63,6 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         indexRootDir = indexDir + "/" + INDEX_ROOT_DIR_NAME;
         createDirectoryIfNotExists(new File(indexRootDir));
         this.USE_SQLITE = useRelationalDatabase;
-        if (USE_SQLITE) {
-            openSQLConnection();
-        }
-    }
-
-    private void openSQLConnection() {
-        String sqlUrl = "jdbc:sqlite:" + indexRootDir + "/" + SERIALIZED_INDEX_DOCUMENTS_SQLITE_FILE_NAME;
-        try {
-            dbConn = DriverManager.getConnection(sqlUrl);
-            if (dbConn != null) {
-                createDBSchemaIfNotExists(dbConn);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.exit(1); // exit on exception
-        }
     }
 
     private void createDBSchemaIfNotExists(Connection sqlConnection) throws SQLException {
@@ -97,10 +81,53 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         stmt.close();
     }
 
-    /**
-     * Clean up method, closes the SQLite connection if this index used a SQLite database
-     */
-    public void cleanUp() {
+    @Override
+    public void startIndexing() {
+        super.startIndexing();
+        if (USE_SQLITE) {
+            openSQLConnection();
+            try {
+                createDBSchemaIfNotExists(dbConn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
+
+    private void openSQLConnection() {
+        String sqlUrl = "jdbc:sqlite:" + indexRootDir + "/" + SERIALIZED_INDEX_DOCUMENTS_SQLITE_FILE_NAME;
+        try {
+            dbConn = DriverManager.getConnection(sqlUrl);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.exit(1); // exit on exception
+        }
+    }
+
+    @Override
+    public void finishIndexing() {
+        super.finishIndexing();
+        if (USE_SQLITE && dbConn != null) {
+            try {
+                dbConn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void startSearching() {
+        super.startSearching();
+        if (USE_SQLITE) {
+            openSQLConnection();
+        }
+    }
+
+    @Override
+    public void finishSearching() {
+        super.finishSearching();
         if (USE_SQLITE && dbConn != null) {
             try {
                 dbConn.close();
@@ -187,9 +214,8 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     }
 
     @Override
-    Directory getIndexDirectory(IndexDocument doc) throws IOException {
-        String docType = doc.getType();
-        String luceneIndexDirPath = indexRootDir + "/" + INVERTED_INDEX_STRUCTURES_DIR_NAME + "/" + docType;
+    Directory getIndexDirectory() throws IOException {
+        String luceneIndexDirPath = indexRootDir + "/" + INVERTED_INDEX_STRUCTURES_DIR_NAME;
         FSDirectory fileDirectory = FSDirectory.open(new File(luceneIndexDirPath).toPath());
         return fileDirectory;
     }

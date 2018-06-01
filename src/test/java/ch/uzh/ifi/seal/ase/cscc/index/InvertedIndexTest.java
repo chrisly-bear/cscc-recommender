@@ -18,9 +18,6 @@ public class InvertedIndexTest {
 
     private static final String INVERTED_INDEX_DIR_NAME = "CSCCInvertedIndex";
     private List<IndexDocument> docsToIndex = new LinkedList<>();
-    private InMemoryInvertedIndex luceneIndexInMemory;
-    private DiskBasedInvertedIndex luceneIndexDiskBased;
-    private DiskBasedInvertedIndex luceneIndexDiskBasedNoSQL;
 
     private IndexDocument receiverObj1 = new IndexDocument(null, "org.entity.RocketShip", new LinkedList<>(), Arrays.asList(
             "toLowerCase", "context"
@@ -40,20 +37,18 @@ public class InvertedIndexTest {
         return methodNames;
     }
 
+    private void putDocumentsInIndex(IInvertedIndex index, Collection<IndexDocument> documents) {
+        index.startIndexing();
+        for (IndexDocument doc : documents) {
+            index.indexDocument(doc);
+        }
+        index.finishIndexing();
+    }
+
     @Before
     public void setUp() {
         // create test documents
         TestUtils.fillWithTestDocuments(docsToIndex);
-
-        // create inverted index
-        luceneIndexInMemory = new InMemoryInvertedIndex();
-        luceneIndexDiskBased = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
-        luceneIndexDiskBasedNoSQL = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST, false);
-        for (IndexDocument doc : docsToIndex) {
-            luceneIndexInMemory.indexDocument(doc);
-            luceneIndexDiskBased.indexDocument(doc);
-            luceneIndexDiskBasedNoSQL.indexDocument(doc);
-        }
     }
 
     @After
@@ -64,21 +59,35 @@ public class InvertedIndexTest {
 
     @Test
     public void search_InMemoryInvertedIndex() {
+        IInvertedIndex luceneIndexInMemory = new InMemoryInvertedIndex();
+        putDocumentsInIndex(luceneIndexInMemory, docsToIndex);
+        luceneIndexInMemory.startSearching();
         Set<IndexDocument> answers = luceneIndexInMemory.search(receiverObj1);
+        luceneIndexInMemory.finishSearching();
         makeAssertions(answers);
+        luceneIndexInMemory.finishIndexing();
     }
 
     @Test
     public void search_DiskBasedInvertedIndex () {
+        IInvertedIndex luceneIndexDiskBased = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST);
+        putDocumentsInIndex(luceneIndexDiskBased, docsToIndex);
+        luceneIndexDiskBased.startSearching();
         Set<IndexDocument> answers = luceneIndexDiskBased.search(receiverObj1);
+        luceneIndexDiskBased.finishSearching();
         makeAssertions(answers);
-        luceneIndexDiskBased.cleanUp();
+        luceneIndexDiskBased.finishIndexing();
     }
 
     @Test
     public void search_DiskBasedInvertedIndexNoSQL () {
+        IInvertedIndex luceneIndexDiskBasedNoSQL = new DiskBasedInvertedIndex(CSCCConfiguration.PERSISTENCE_LOCATION_TEST, false);
+        putDocumentsInIndex(luceneIndexDiskBasedNoSQL, docsToIndex);
+        luceneIndexDiskBasedNoSQL.startSearching();
         Set<IndexDocument> answers = luceneIndexDiskBasedNoSQL.search(receiverObj1);
+        luceneIndexDiskBasedNoSQL.finishSearching();
         makeAssertions(answers);
+        luceneIndexDiskBasedNoSQL.finishIndexing();
     }
 
     private void makeAssertions(Set<IndexDocument> answers) {

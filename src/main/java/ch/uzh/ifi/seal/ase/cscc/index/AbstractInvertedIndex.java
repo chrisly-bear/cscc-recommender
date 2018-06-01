@@ -6,6 +6,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.LockObtainFailedException;
 
 import java.io.*;
 import java.util.*;
@@ -19,8 +20,24 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     // fields for indexing in Lucene index
     private static final String DOC_ID_FIELD = "docID";
     private static final String OVERALL_CONTEXT_FIELD = "overallContext";
+    private static final String TYPE_FIELD = "type";
     private StringField docIdField = new StringField(DOC_ID_FIELD, "", Field.Store.YES);
-    private StringField overallContextField = new StringField(OVERALL_CONTEXT_FIELD, "", Field.Store.NO);
+    private StringField typeField = new StringField(TYPE_FIELD, "", Field.Store.NO);
+
+    private Directory indexDirectory;
+    private IndexWriter indexWriter;
+    private IndexSearcher searcher;
+
+    private void initializeDirectory() {
+        try {
+            indexDirectory = getIndexDirectory();
+        } catch (LockObtainFailedException e) {
+            e.printStackTrace();
+            System.exit(1); // can't write to indexDirectory, abort
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Puts an IndexDocument in the index.
@@ -34,13 +51,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         }
         try {
             serializeIndexDocument(doc);
-            Directory indexDirectory = getIndexDirectory(doc);
-            IndexWriterConfig config = new IndexWriterConfig();
-            // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
-            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-            IndexWriter w = new IndexWriter(indexDirectory, config);
-            addDocToLuceneIndex(w, doc);
-            w.close();
+            addDocToLuceneIndex(doc);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1); // exit on IOException
@@ -62,32 +73,32 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     /**
      * Get the directory of this document. Either the RAM directory (if index is in-memory index) or the FSDirectory (if index is disk index).
-     * @param doc
      * @return The directory of this document
      * @throws IOException
      */
-    abstract Directory getIndexDirectory(IndexDocument doc) throws IOException;
+    abstract Directory getIndexDirectory() throws IOException;
 
     /**
      * Stores docID and the overall context in the Lucene index. The overall context will be what we search for at
      * retrieval time, the docID will be the result of the retrieval.
-     * @param w The writer that should be used to write the document to the index
      * @param doc The document that should be added to the index
      * @throws IOException
      */
-    void addDocToLuceneIndex(IndexWriter w, IndexDocument doc) throws IOException {
+    void addDocToLuceneIndex(IndexDocument doc) throws IOException {
         Document luceneDoc = new Document();
         docIdField.setStringValue(doc.getId());
         luceneDoc.add(docIdField);
+        typeField.setStringValue(doc.getType());
+        luceneDoc.add(typeField);
         // store all terms in the overall context as tokens in the index
         // StringField: no tokenization
         // TextField: tokenization
         for (String term : doc.getOverallContext()) {
-            overallContextField.setStringValue(term);
+            StringField overallContextField = new StringField(OVERALL_CONTEXT_FIELD, term, Field.Store.NO);
             luceneDoc.add(overallContextField);
         }
-//        w.addDocument(luceneDoc); // this will add duplicates to an existing index
-        w.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
+//        indexWriter.addDocument(luceneDoc); // this will add duplicates to an existing index
+        indexWriter.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
     }
 
     /**
@@ -100,17 +111,14 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      */
     public Set<IndexDocument> search(IndexDocument doc) {
         Set<IndexDocument> answers = new HashSet<>();
-        Directory indexDirectory;
         try {
-            indexDirectory = getIndexDirectory(doc);
-            IndexReader reader = DirectoryReader.open(indexDirectory);
-            IndexSearcher searcher = new IndexSearcher(reader);
-
             BooleanQuery.Builder boolQueryBuilder = new BooleanQuery.Builder();
+            Query queryForType = new TermQuery(new Term(TYPE_FIELD, doc.getType()));
+            boolQueryBuilder.add(queryForType, BooleanClause.Occur.MUST);
             for (String termStr : doc.getOverallContext()) {
                 Term term = new Term(OVERALL_CONTEXT_FIELD, termStr);
-                Query query = new TermQuery(term);
-                boolQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
+                Query queryForOverallContext = new TermQuery(term);
+                boolQueryBuilder.add(queryForOverallContext, BooleanClause.Occur.SHOULD);
             }
             Query boolQuery = boolQueryBuilder.build();
             List<Integer> docs = new ArrayList<>();
@@ -160,5 +168,43 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @return
      */
     abstract IndexDocument deserializeIndexDocument(String docID) throws IOException;
+
+    @Override
+    public void startIndexing() {
+        initializeDirectory();
+        IndexWriterConfig config = new IndexWriterConfig();
+        // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
+        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+        try {
+            indexWriter = new IndexWriter(indexDirectory, config);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void finishIndexing() {
+        try {
+            indexWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void startSearching() {
+        initializeDirectory();
+        try {
+            IndexReader reader = DirectoryReader.open(indexDirectory);
+            searcher = new IndexSearcher(reader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void finishSearching() {
+        // nothing to do here
+    }
 
 }

@@ -17,9 +17,11 @@ public class RecommenderTest {
 
     private InMemoryInvertedIndex getTestIndex() {
         InMemoryInvertedIndex index = new InMemoryInvertedIndex();
+        index.startIndexing();
         for (IndexDocument doc : docsToIndex) {
             index.indexDocument(doc);
         }
+        index.finishIndexing();
         return index;
     }
 
