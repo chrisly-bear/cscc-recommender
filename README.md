@@ -1,6 +1,8 @@
 # cscc-recommender [![Build Status](https://travis-ci.org/chrisly-bear/cscc-recommender.svg?branch=master)](https://travis-ci.org/chrisly-bear/cscc-recommender) [![Coverage Status](https://coveralls.io/repos/github/chrisly-bear/cscc-recommender/badge.svg?branch=master)](https://coveralls.io/github/chrisly-bear/cscc-recommender?branch=master)
 
-Recommender system for code completion based on CSCC (ASE FS18).
+Recommender system for code completion. The algorithm is based on [CSCC: Simple, Efficient, Context Sensitive Code Completion](https://ieeexplore.ieee.org/document/6976073/) by Asaduzzaman, Muhammad, et al.
+
+## Include in your project
 
 ### Maven configuration
 
@@ -30,7 +32,7 @@ Add this to your dependencies in your pom.xml:
 </dependency>
 ```
 
-### Gradle Configuration
+### Gradle configuration
 
 Add this entry anywhere in your build.gradle file:
 
@@ -48,6 +50,14 @@ Add this to your dependencies in your build.gradle file:
 compile 'ch.uzh.ifi.seal.ase:cscc:0.1'
 ```
 
-### License
+## Getting started
+
+1. Download KaVE data set from [www.kave.cc/datasets](http://www.kave.cc/datasets), unzip, and put them in `Data/Events` and `Data/Contexts`.
+2. Download a pre-trained model from the [release page](https://github.com/chrisly-bear/cscc-recommender/releases) or train your own.
+3. (_optional_) Adjust parameters in `ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration`.
+4. See `ch.uzh.ifi.seal.ase.cscc.RunMe` for sample code on how to get code completions and train your own model.
+5. Check the [wiki](https://github.com/chrisly-bear/cscc-recommender/wiki) for more information.
+
+## License
 
 This project is licensed under the Apache License 2.0.
