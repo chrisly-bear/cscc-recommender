@@ -96,7 +96,7 @@ public class RecommenderHelper {
 
         List<String> zips = IoHelper.findAllZips(contextsDir);
 
-        IInvertedIndex diskIndex = new ParallelizedInvertedIndex(modelOutputDir);
+        IInvertedIndex diskIndex = new DiskBasedInvertedIndex(modelOutputDir);
         CompletionModel completionModel = new CompletionModel(diskIndex);
 
         int zipTotal = zips.size();
