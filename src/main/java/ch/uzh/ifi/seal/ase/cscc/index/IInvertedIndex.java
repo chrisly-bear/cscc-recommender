@@ -6,5 +6,6 @@ public interface IInvertedIndex {
 
     void indexDocument(IndexDocument doc);
     Set<IndexDocument> search(IndexDocument doc);
+    void cleanUp();
 
 }

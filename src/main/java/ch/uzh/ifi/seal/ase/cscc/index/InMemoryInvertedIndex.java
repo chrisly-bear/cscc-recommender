@@ -19,7 +19,7 @@ public class InMemoryInvertedIndex extends AbstractInvertedIndex {
     private RAMDirectory directory = new RAMDirectory();
 
     public InMemoryInvertedIndex() {
-        super.initializeIndexDirectory();
+        super.initialize();
     }
 
     @Override

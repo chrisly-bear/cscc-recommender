@@ -113,6 +113,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
     /**
      * Call this method when this instance is not used anymore. It closes the ExecuterService.
      */
+    @Override
     public void cleanUp() {
 
         // if we do shutdown then no new tasks can be added to queue. this is a problem because the remaining docs

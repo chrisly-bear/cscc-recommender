@@ -65,7 +65,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         if (USE_SQLITE) {
             openSQLConnection();
         }
-        super.initializeIndexDirectory();
+        super.initialize();
     }
 
     private void openSQLConnection() {
@@ -100,7 +100,9 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     /**
      * Call this method when this instance is not used anymore. It closes the SQLite connection.
      */
+    @Override
     public void cleanUp() {
+        super.cleanUp();
         if (USE_SQLITE && dbConn != null) {
             try {
                 dbConn.close();

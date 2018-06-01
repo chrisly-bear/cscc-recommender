@@ -21,10 +21,18 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     private StringField typeField = new StringField(TYPE_FIELD, "", Field.Store.NO);
 
     private Directory indexDirectory;
+    private IndexWriter indexWriter;
 
-    void initializeIndexDirectory() {
+    /**
+     * Make sure to call this method in the constructor of the subclasses!
+     */
+    void initialize() {
         try {
-            this.indexDirectory = getIndexDirectory();
+            indexDirectory = getIndexDirectory();
+            IndexWriterConfig config = new IndexWriterConfig();
+            // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
+            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+            indexWriter = new IndexWriter(indexDirectory, config);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,12 +50,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
         }
         try {
             serializeIndexDocument(doc);
-            IndexWriterConfig config = new IndexWriterConfig();
-            // CREATE_OR_APPEND creates a new index if one does not exist, otherwise it opens the index and documents will be appended
-            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-            IndexWriter w = new IndexWriter(indexDirectory, config);
-            addDocToLuceneIndex(w, doc);
-            w.close();
+            addDocToLuceneIndex(doc);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1); // exit on IOException
@@ -77,7 +80,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @param doc
      * @throws IOException
      */
-    void addDocToLuceneIndex(IndexWriter w, IndexDocument doc) throws IOException {
+    void addDocToLuceneIndex(IndexDocument doc) throws IOException {
         Document luceneDoc = new Document();
         docIdField.setStringValue(doc.getId());
         luceneDoc.add(docIdField);
@@ -90,8 +93,8 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
             overallContextField.setStringValue(term);
             luceneDoc.add(overallContextField);
         }
-//        w.addDocument(luceneDoc); // this will add duplicates to an existing index
-        w.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
+//        indexWriter.addDocument(luceneDoc); // this will add duplicates to an existing index
+        indexWriter.updateDocument(new Term(DOC_ID_FIELD, doc.getId()), luceneDoc); // don't index docs with same docID twice
     }
 
     /**
@@ -144,5 +147,14 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * @return
      */
     abstract IndexDocument deserializeIndexDocument(String docID) throws IOException;
+
+    @Override
+    public void cleanUp() {
+        try {
+            indexWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
