@@ -11,6 +11,7 @@ public interface IInvertedIndex {
      * Puts an IndexDocument in the index.
      * Make sure you call {@link IInvertedIndex#startIndexing()} first and call {@link IInvertedIndex#finishIndexing()}
      * when done.
+     *
      * @param doc document to store in the index.
      */
     void indexDocument(IndexDocument doc);
@@ -18,6 +19,7 @@ public interface IInvertedIndex {
     /**
      * Searches documents similar to {@code doc}. Make sure you call {@link IInvertedIndex#startSearching()} first and
      * call {@link IInvertedIndex#finishSearching()} when done.
+     *
      * @param doc document for which to find similar documents
      * @return
      */

@@ -28,16 +28,10 @@ public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
     /**
      * Creates a new KaveRecommender instance using the given index as the underlying model
      *
-     * @param index       inverted index structure (model) with which to suggest code completions
+     * @param index inverted index structure (model) with which to suggest code completions
      */
     public KaVeRecommender(IInvertedIndex index) {
         this.index = index;
-    }
-
-    private void processQuery(IndexDocument receiverObj) {
-        baseCandidates = getBaseCandidates(index, receiverObj);
-        refinedCandidates = getRefinedCandidates(baseCandidates, receiverObj);
-        scoredCandidates = sortRefinedCandidates(refinedCandidates, receiverObj);
     }
 
     private static List<IndexDocument> getBaseCandidates(IInvertedIndex index, IndexDocument receiverObj) {
@@ -106,6 +100,12 @@ public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
         }
     }
 
+    private void processQuery(IndexDocument receiverObj) {
+        baseCandidates = getBaseCandidates(index, receiverObj);
+        refinedCandidates = getRefinedCandidates(baseCandidates, receiverObj);
+        scoredCandidates = sortRefinedCandidates(refinedCandidates, receiverObj);
+    }
+
     /*
       ICallsRecommender IMPLEMENTATIONS
      */
@@ -114,8 +114,7 @@ public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
      * Use the recommender-specific query format to query proposals.
      * This is the recommended way to get code completions.
      *
-     * @param query
-     *            the query in a format specfic to the recommender
+     * @param query the query in a format specfic to the recommender
      * @return a sorted set of the proposed methods plus probability
      */
     @Override
@@ -135,15 +134,14 @@ public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
 
     /**
      * Query proposals by providing a context.
-     *
+     * <p>
      * NOTE: Since the CSCC algorithm works on single receiver objects of one specific type and not entire
-     *       contexts which may contain several method invocations on receiver objects of different types, this method
-     *       combines the contexts of all method invocations into one, then makes a recommendation based on this combined
-     *       context and the type of the last receiver object in the context. CSCC is not intended to be used this way
-     *       and the results may not be very meaningful.
+     * contexts which may contain several method invocations on receiver objects of different types, this method
+     * combines the contexts of all method invocations into one, then makes a recommendation based on this combined
+     * context and the type of the last receiver object in the context. CSCC is not intended to be used this way
+     * and the results may not be very meaningful.
      *
-     * @param ctx
-     *            the query as a Context
+     * @param ctx the query as a Context
      * @return a sorted set of the proposed methods plus probability
      */
     @Override
@@ -169,20 +167,18 @@ public class KaVeRecommender implements ICallsRecommender<IndexDocument> {
 
     /**
      * Query proposals by providing a context and the proposals given by the IDE.
-     *
+     * <p>
      * NOTE 1: Same as {@link KaVeRecommender#query(Context)}. The IDE proposals are
-     *         ignored.
-     *
+     * ignored.
+     * <p>
      * NOTE 2: Since the CSCC algorithm works on single receiver objects of one specific type and not entire
-     *         contexts which may contain several method invocations on receiver objects of different types, this method
-     *         combines the contexts of all method invocations into one, then makes a recommendation based on this combined
-     *         context and the type of the last receiver object in the context. CSCC is not intended to be used this way
-     *         and the results may not be very meaningful.
+     * contexts which may contain several method invocations on receiver objects of different types, this method
+     * combines the contexts of all method invocations into one, then makes a recommendation based on this combined
+     * context and the type of the last receiver object in the context. CSCC is not intended to be used this way
+     * and the results may not be very meaningful.
      *
-     * @param ctx
-     *            the query as a Context
-     * @param ideProposals
-     *            the proposal given by the IDE
+     * @param ctx          the query as a Context
+     * @param ideProposals the proposal given by the IDE
      * @return a sorted set of the proposed methods plus probability
      */
     @Override

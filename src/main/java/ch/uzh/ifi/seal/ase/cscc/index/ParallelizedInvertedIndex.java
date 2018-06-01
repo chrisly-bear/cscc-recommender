@@ -16,7 +16,10 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static java.lang.Thread.sleep;
@@ -32,22 +35,17 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
     private static final String OVERALL_CONTEXT_FIELD = "overallContext";
 
     private static final String SQL_TABLE_NAME = "indexdocuments";
-    private final Logger LOGGER = Logger.getLogger(DiskBasedInvertedIndex.class.getName());
-
     private static final String INDEX_ROOT_DIR_NAME = "CSCCInvertedIndex";
     private static final String SERIALIZED_INDEX_DOCUMENTS_DIR_NAME = "IndexDocuments";
     private static final String SERIALIZED_INDEX_DOCUMENTS_SQLITE_FILE_NAME = "IndexDocuments.db";
     private static final String INVERTED_INDEX_STRUCTURES_DIR_NAME = "InvertedIndexStructures_Lucene";
-
+    private final Logger LOGGER = Logger.getLogger(DiskBasedInvertedIndex.class.getName());
+    ThreadPoolExecutor executorService = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
     // directory where the Lucene index is persisted on disk
     private String indexRootDir;
-
     // true: we store IndexDocuments in SQLite database
     // false: we serialize IndexDocuments to disk as files with .ser ending
     private boolean USE_SQLITE = true;
-
-    ThreadPoolExecutor executorService = new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-
     private ConcurrentHashMap<Directory, IndexWriter> filePathToIndexWriter = new ConcurrentHashMap<>();
 
     /*
@@ -57,6 +55,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
     /**
      * Constructor.
      * Uses an SQLite database to store the IndexDocument objects.
+     *
      * @param indexDir directory in which the inverted index will be stored.
      */
     public ParallelizedInvertedIndex(String indexDir) {
@@ -65,7 +64,8 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
 
     /**
      * Constructor
-     * @param indexDir directory in which the inverted index will be stored.
+     *
+     * @param indexDir              directory in which the inverted index will be stored.
      * @param useRelationalDatabase true: we store IndexDocuments in SQLite database,
      *                              false: we serialize IndexDocuments to disk as files with .ser ending
      */
@@ -124,7 +124,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
         // if we do shutdown then no new tasks can be added to queue. this is a problem because the remaining docs
         // (tasks) in the queue might still encounter a locked index and need to be re-added to queue several more times
 //        executorService.shutdown();
-        
+
         while (executorService.getQueue().size() > 0) {
             System.out.println("Queue size: " + executorService.getQueue().size());
             try {
@@ -148,6 +148,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
 
     /**
      * Puts an IndexDocument in the index.
+     *
      * @param doc document to store in index
      */
     @Override
@@ -157,11 +158,11 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
             Connection dbConn = openSQLConnection();
             dbConn.setAutoCommit(false);
             if (ParallelizedInvertedIndex.this.isIndexed(dbConn, doc)) {
-            // do not put identical documents in index twice
+                // do not put identical documents in index twice
 //            System.out.println("doc " + doc.getId() + " is already indexed");
-            dbConn.close(); // doc is already in index, we're done here. close db connection.
-            return;
-        }
+                dbConn.close(); // doc is already in index, we're done here. close db connection.
+                return;
+            }
             serializeIndexDocument(dbConn, doc);
         } catch (IOException e) {
             e.printStackTrace();
@@ -171,6 +172,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
 
         executorService.execute(new Runnable() {
             private int attempts = 0;
+
             @Override
             public void run() {
                 attempts++;
@@ -353,7 +355,9 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
     private String serializeContext(List<String> context) {
         StringBuilder sb = new StringBuilder();
         for (String s : context) {
-            sb.append(s.length()); sb.append("~"); sb.append(s);
+            sb.append(s.length());
+            sb.append("~");
+            sb.append(s);
         }
         return sb.toString();
     }
@@ -364,7 +368,7 @@ public class ParallelizedInvertedIndex implements IInvertedIndex {
         while (position < context.length()) {
             int tildePosition = position + context.substring(position).indexOf("~");
             int wordLength = Integer.valueOf(context.substring(position, tildePosition));
-            String s = context.substring(tildePosition+1, tildePosition+1+wordLength);
+            String s = context.substring(tildePosition + 1, tildePosition + 1 + wordLength);
             result.add(s);
             position = tildePosition + wordLength + 1;
         }

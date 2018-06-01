@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Class representing the context around a given method call and the type of the receiver object
  * in a document as described by the paper {@see <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.703.9376&rep=rep1&type=pdf">}
- *
+ * <p>
  * Important: Due to how the id is created, different IndexDocument objects will have the same {@link IndexDocument#id}
  * if they have the same {@link IndexDocument#type}, {@link IndexDocument#methodCall}, and {@link IndexDocument#overallContext}
  */
@@ -58,9 +58,8 @@ public class IndexDocument implements Serializable {
     }
 
     /**
-     *
      * Creates a new IndexDocument with the given information.
-     *
+     * <p>
      * Use this constructor only if you are loading IndexDocument instances from a stored model
      * and you already know their docID and simhashes.
      */
@@ -142,6 +141,7 @@ public class IndexDocument implements Serializable {
 
     /**
      * Calculates the hamming distance between the line contexts of this IndexDocument another one.
+     *
      * @param other The other document
      * @return The hamming distance between this document's and the other's line context
      */
@@ -151,6 +151,7 @@ public class IndexDocument implements Serializable {
 
     /**
      * Calculates the hamming distance between the overall contexts of this IndexDocument another one.
+     *
      * @param other The other document
      * @return The hamming distance between this document's and the other's overall context
      */

@@ -79,6 +79,7 @@ public class IndexDocumentExtractionVisitorNoList extends AbstractTraversingNode
      * E.g. "System.Collections.Generic.List`1[[T -> MailChimp.Lists.Grouping, MailChimp]]"
      * becomes "System.Collections.Generic.List".
      * This has the side effect that we index types which differ in their generics as the same type.
+     *
      * @param type type string to normalize
      * @return normalized type string
      */

@@ -14,6 +14,7 @@ public class CompletionModelEvaluator {
 
     /**
      * Creates a new {@link CompletionModelEvaluator} holding the a {@link CompletionModel}
+     *
      * @param model The {@link CompletionModel}
      */
     public CompletionModelEvaluator(CompletionModel model) {
@@ -22,6 +23,7 @@ public class CompletionModelEvaluator {
 
     /**
      * Test if our model recommends the given method.
+     *
      * @param document The ground truth method to test against. If this method is in our recommendation then we
      *                 consider this recommendation as correct.
      */
@@ -40,6 +42,7 @@ public class CompletionModelEvaluator {
 
     /**
      * Get the precision achieved by this model, i.e relevant recommendations / requested recommendations
+     *
      * @return
      */
     public float getPrecision() {
@@ -48,6 +51,7 @@ public class CompletionModelEvaluator {
 
     /**
      * Get the recall achieved by this model, i.e. made recommendations / requested recommendations
+     *
      * @return
      */
     public float getRecall() {

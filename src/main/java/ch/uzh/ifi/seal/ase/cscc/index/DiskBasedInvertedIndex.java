@@ -22,13 +22,11 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
      */
 
     private static final String SQL_TABLE_NAME = "indexdocuments";
-    private final Logger LOGGER = Logger.getLogger(DiskBasedInvertedIndex.class.getName());
-
     private static final String INDEX_ROOT_DIR_NAME = "CSCCInvertedIndex";
     private static final String SERIALIZED_INDEX_DOCUMENTS_DIR_NAME = "IndexDocuments";
     private static final String SERIALIZED_INDEX_DOCUMENTS_SQLITE_FILE_NAME = "IndexDocuments.db";
     private static final String INVERTED_INDEX_STRUCTURES_DIR_NAME = "InvertedIndexStructures_Lucene";
-
+    private final Logger LOGGER = Logger.getLogger(DiskBasedInvertedIndex.class.getName());
     // directory where the Lucene index is persisted on disk
     private String indexRootDir;
 
@@ -46,6 +44,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     /**
      * Creates a new {@link DiskBasedInvertedIndex} using the given index directory to store the index
      * Uses an SQLite database to store the IndexDocument objects.
+     *
      * @param indexDir directory in which the inverted index will be stored.
      */
     public DiskBasedInvertedIndex(String indexDir) {
@@ -55,7 +54,8 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     /**
      * Creates a new {@link DiskBasedInvertedIndex} using the given index directory to store the index. Uses an
      * SQLite database based on wether {@code useRelationalDatabase} is true or false.
-     * @param indexDir directory in which the inverted index will be stored.
+     *
+     * @param indexDir              directory in which the inverted index will be stored.
      * @param useRelationalDatabase true: we store IndexDocuments in SQLite database,
      *                              false: we serialize IndexDocuments to disk as files with .ser ending
      */
@@ -256,7 +256,9 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
     private String serializeContext(List<String> context) {
         StringBuilder sb = new StringBuilder();
         for (String s : context) {
-            sb.append(s.length()); sb.append("~"); sb.append(s);
+            sb.append(s.length());
+            sb.append("~");
+            sb.append(s);
         }
         return sb.toString();
     }
@@ -267,7 +269,7 @@ public class DiskBasedInvertedIndex extends AbstractInvertedIndex {
         while (position < context.length()) {
             int tildePosition = position + context.substring(position).indexOf("~");
             int wordLength = Integer.valueOf(context.substring(position, tildePosition));
-            String s = context.substring(tildePosition+1, tildePosition+1+wordLength);
+            String s = context.substring(tildePosition + 1, tildePosition + 1 + wordLength);
             result.add(s);
             position = tildePosition + wordLength + 1;
         }

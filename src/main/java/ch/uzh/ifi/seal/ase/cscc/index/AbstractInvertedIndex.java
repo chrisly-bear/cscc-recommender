@@ -8,8 +8,11 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract class implementing {@link IInvertedIndex}
@@ -41,6 +44,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     /**
      * Puts an IndexDocument in the index.
+     *
      * @param doc document to store in index
      */
     public void indexDocument(IndexDocument doc) {
@@ -60,12 +64,14 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     /**
      * Checks if a document is already in the index.
+     *
      * @param doc The document to check wether it is indexed or not
      */
     abstract boolean isIndexed(IndexDocument doc);
 
     /**
      * Serialize a given document
+     *
      * @param doc The document to serialize
      * @throws IOException
      */
@@ -73,6 +79,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     /**
      * Get the directory of this document. Either the RAM directory (if index is in-memory index) or the FSDirectory (if index is disk index).
+     *
      * @return The directory of this document
      * @throws IOException
      */
@@ -81,6 +88,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
     /**
      * Stores docID and the overall context in the Lucene index. The overall context will be what we search for at
      * retrieval time, the docID will be the result of the retrieval.
+     *
      * @param doc The document that should be added to the index
      * @throws IOException
      */
@@ -105,6 +113,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
      * Searches the Lucene index for documents which match doc's type and which contain similar terms in the overall
      * context as doc.
      * The query equals a boolean OR query of all terms in the overall context of doc.
+     *
      * @param doc document for which to find similar documents
      * @return documents which are similar to doc, i.e. documents whose overall context has at least one term in
      * common with doc's overall context
@@ -164,6 +173,7 @@ public abstract class AbstractInvertedIndex implements IInvertedIndex {
 
     /**
      * deserialize IndexDocument object with the given docID
+     *
      * @param docID
      * @return
      */

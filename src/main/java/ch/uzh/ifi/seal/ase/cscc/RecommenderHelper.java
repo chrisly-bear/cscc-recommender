@@ -10,7 +10,10 @@ import cc.kave.commons.utils.io.IReadingArchive;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModel;
 import ch.uzh.ifi.seal.ase.cscc.CompletionModel.CompletionModelEvaluator;
-import ch.uzh.ifi.seal.ase.cscc.index.*;
+import ch.uzh.ifi.seal.ase.cscc.index.DiskBasedInvertedIndex;
+import ch.uzh.ifi.seal.ase.cscc.index.IInvertedIndex;
+import ch.uzh.ifi.seal.ase.cscc.index.InMemoryInvertedIndex;
+import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
 import ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration;
 import ch.uzh.ifi.seal.ase.cscc.utils.IoHelper;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitor;
@@ -25,13 +28,29 @@ import java.util.logging.Logger;
 
 public class RecommenderHelper {
 
+    private final Logger LOGGER = Logger.getLogger(RecommenderHelper.class.getName());
     private String contextsDir;
     private String eventsDir;
-    private final Logger LOGGER = Logger.getLogger(RecommenderHelper.class.getName());
 
     public RecommenderHelper(String contextsDir, String eventsDir) {
         this.contextsDir = contextsDir;
         this.eventsDir = eventsDir;
+    }
+
+    /**
+     * Shuts down DiskBasedInvertedIndex gracefully so that indexing can continue when it is started again.
+     */
+    private static void addShutdownHook() {
+        final Thread mainThread = Thread.currentThread();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println(" === SHUTTING DOWN GRACEFULLY ===");
+            CSCCConfiguration.keepRunning = false;
+            try {
+                mainThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
     /**
@@ -62,8 +81,8 @@ public class RecommenderHelper {
 
             System.out.printf("evaluating model %d/%d\n", i, 10);
             float[] result = performCrossValidation(bucketSize, i, completionModel);
-            precisions[i-1] = result[0];
-            recalls[i-1] = result[1];
+            precisions[i - 1] = result[0];
+            recalls[i - 1] = result[1];
         }
         System.out.printf("-------------------------------\n" +
                 "overall 10-fold precision = %.0f%%\n" +
@@ -76,7 +95,7 @@ public class RecommenderHelper {
         for (float v : values) {
             sum += v;
         }
-        return sum/values.length;
+        return sum / values.length;
     }
 
     /**
@@ -165,22 +184,6 @@ public class RecommenderHelper {
             }
             completionModel.finishTraining();
         }
-    }
-
-    /**
-     * Shuts down DiskBasedInvertedIndex gracefully so that indexing can continue when it is started again.
-     */
-    private static void addShutdownHook() {
-        final Thread mainThread = Thread.currentThread();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println(" === SHUTTING DOWN GRACEFULLY ===");
-            CSCCConfiguration.keepRunning = false;
-            try {
-                mainThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }));
     }
 
     private String readProgressFile(String modelOutputDir) {
@@ -375,7 +378,6 @@ public class RecommenderHelper {
     }
 
     /**
-     *
      * @param bucketSize
      * @param testBucketNum
      * @param completionModel
@@ -439,6 +441,6 @@ public class RecommenderHelper {
         float recall = eval.getRecall();
         System.out.printf("precision = %.0f%%, recall = %.0f%%\n", precision, recall);
 
-        return new float[] {precision, recall};
+        return new float[]{precision, recall};
     }
 }

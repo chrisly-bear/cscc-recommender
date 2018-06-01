@@ -3,7 +3,9 @@ package ch.uzh.ifi.seal.ase.cscc.CompletionModel;
 import cc.kave.commons.model.events.completionevents.Context;
 import cc.kave.commons.model.ssts.ISST;
 import cc.kave.commons.model.ssts.visitor.ISSTNodeVisitor;
-import ch.uzh.ifi.seal.ase.cscc.index.*;
+import ch.uzh.ifi.seal.ase.cscc.index.IInvertedIndex;
+import ch.uzh.ifi.seal.ase.cscc.index.IndexDocument;
+import ch.uzh.ifi.seal.ase.cscc.index.Recommender;
 import ch.uzh.ifi.seal.ase.cscc.visitors.IndexDocumentExtractionVisitorNoList;
 
 
@@ -16,6 +18,7 @@ public class CompletionModel {
 
     /**
      * Creates a new completion model, representing the model trained by the datasets
+     *
      * @param index An implementation of the IInvertedIndex interface
      */
     public CompletionModel(IInvertedIndex index) {
@@ -24,6 +27,7 @@ public class CompletionModel {
 
     /**
      * Takes a Context object from the KaVe datasets, creates a new IndexDocument and adds it to the model
+     *
      * @param ctx The context object to add to the model
      */
     public void train(Context ctx) {
@@ -44,6 +48,7 @@ public class CompletionModel {
 
     /**
      * Creates a new Recommender for the given IndexDocument, using the underlying model to recommend
+     *
      * @param document
      * @return A new recommender
      */
