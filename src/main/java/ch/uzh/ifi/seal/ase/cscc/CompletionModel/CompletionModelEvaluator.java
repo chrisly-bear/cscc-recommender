@@ -38,10 +38,18 @@ public class CompletionModelEvaluator {
         }
     }
 
+    /**
+     * Get the precision achieved by this model, i.e relevant recommendations / requested recommendations
+     * @return
+     */
     public float getPrecision() {
         return 100.f * recommendationsRelevant / recommendationsRequested;
     }
 
+    /**
+     * Get the recall achieved by this model, i.e. made recommendations / requested recommendations
+     * @return
+     */
     public float getRecall() {
         return 100.f * recommendationsMade / recommendationsRequested;
     }
