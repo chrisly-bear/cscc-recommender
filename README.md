@@ -28,7 +28,7 @@ Add this to your dependencies in your pom.xml:
 <dependency>
   <groupId>ch.uzh.ifi.seal.ase</groupId>
   <artifactId>cscc</artifactId>
-  <version>0.1</version>
+  <version>1.0.1</version>
 </dependency>
 ```
 
@@ -47,13 +47,13 @@ repositories {
 Add this to your dependencies in your build.gradle file:
 
 ```gradle
-compile 'ch.uzh.ifi.seal.ase:cscc:0.1'
+compile 'ch.uzh.ifi.seal.ase:cscc:1.0.1'
 ```
 
 ## Getting started
 
 1. Download KaVE data set from [www.kave.cc/datasets](http://www.kave.cc/datasets), unzip, and put them in `Data/Events` and `Data/Contexts`.
-2. Download our pre-trained model from the [release page](https://github.com/chrisly-bear/cscc-recommender/releases) and unpack it (`tar -xf cscc-model_z-all_s-6_c-170503.tar.lmza`) to `Data/Model`, or train your own.
+2. Download our pre-trained model from the [release page](https://github.com/chrisly-bear/cscc-recommender/releases) and unpack it (`tar -xf cscc-model_z1008_s6_c170503.tar.lmza`) to `Data/Model`, or train your own.
 3. (_optional_) Adjust parameters in `ch.uzh.ifi.seal.ase.cscc.utils.CSCCConfiguration`.
 4. See `ch.uzh.ifi.seal.ase.cscc.RunMe` for sample code on how to get code completions and train your own model.
 5. Check the [wiki](https://github.com/chrisly-bear/cscc-recommender/wiki) for more information.
