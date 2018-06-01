@@ -9,6 +9,13 @@ import org.apache.commons.text.similarity.LongestCommonSubsequence;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Class representing the context around a given method call and the type of the receiver object
+ * in a document as described by the paper {@see <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.703.9376&rep=rep1&type=pdf">}
+ *
+ * Important: Due to how the id is created, different IndexDocument objects will have the same {@link IndexDocument#id}
+ * if they have the same {@link IndexDocument#type}, {@link IndexDocument#methodCall}, and {@link IndexDocument#overallContext}
+ */
 public class IndexDocument implements Serializable {
 
     private transient SimHashBuilder simHashBuilder;
@@ -21,8 +28,8 @@ public class IndexDocument implements Serializable {
     private long overallContextSimhash;
 
     /**
-     * Use this constructor when creating new IndexDocument objects. DocID and simhashes will be calculated
-     * automatically.
+     * Creates a new IndexDocument storing the given information and assigns it an id based on
+     * {@link IndexDocument#type}, {@link IndexDocument#methodCall}, and {@link IndexDocument#overallContext}
      */
     public IndexDocument(String methodCall, String type, Collection<String> lineContext, Collection<String> overallContext) {
         if (type == null || type.equals("")) {
@@ -51,8 +58,11 @@ public class IndexDocument implements Serializable {
     }
 
     /**
-     * Use this constructor if you are loading IndexDocument instances from a stored model and you already know their
-     * docID and simhashes.
+     *
+     * Creates a new IndexDocument with the given information.
+     *
+     * Use this constructor only if you are loading IndexDocument instances from a stored model
+     * and you already know their docID and simhashes.
      */
     public IndexDocument(String docId, String methodCall, String type, Collection<String> lineContext, Collection<String> overallContext, long lineContextSimhash, long overallContextSimhash) {
         id = docId;
@@ -67,6 +77,7 @@ public class IndexDocument implements Serializable {
     /*
       Getters
      */
+
     public String getId() {
         return id;
     }
@@ -129,16 +140,26 @@ public class IndexDocument implements Serializable {
         return concatenatedString.toString();
     }
 
+    /**
+     * Calculates the hamming distance between the line contexts of this IndexDocument another one.
+     * @param other The other document
+     * @return The hamming distance between this document's and the other's line context
+     */
     public int lineContextHammingDistanceToOther(IndexDocument other) {
         return Util.hammingDistance(this.getLineContextSimhash(), other.getLineContextSimhash());
     }
 
+    /**
+     * Calculates the hamming distance between the overall contexts of this IndexDocument another one.
+     * @param other The other document
+     * @return The hamming distance between this document's and the other's overall context
+     */
     public int overallContextHammingDistanceToOther(IndexDocument other) {
         return Util.hammingDistance(this.getOverallContextSimhash(), other.getOverallContextSimhash());
     }
 
     /**
-     * Compares the overall context of `this` to `other`
+     * Compares the overall context of `this` to `other` using LCS (Longest Common Subsequence)
      *
      * @param other document to compare this one to
      * @return value between [0,1] where
@@ -155,7 +176,7 @@ public class IndexDocument implements Serializable {
     }
 
     /**
-     * Compares the line context of `this` to `other`
+     * Compares the line context of `this` to `other` using Levenshtein Distance
      *
      * @param other document to compare this one to
      * @return value between [0,1] where
